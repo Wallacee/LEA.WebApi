@@ -1,11 +1,15 @@
 ﻿using LEA.WebApi.Domain.Entites;
 using LEA.WebApi.Domain.Enuns;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LEA.WebApi.Domain.Models
 {
-    public class MatchStats : Entity
+    [Table("MatchesStatistics")]
+    public class MatchStatistics : Entity
     {
         public Team Team { get; set; }
+        public virtual Match Match { get; set; }
+        public int MatchId { get; set; }
         public int TeamId { get; set; }
         public Scoreboard ResultFullTime { get; set; }
         public Scoreboard ResultHalfTime { get; set; }

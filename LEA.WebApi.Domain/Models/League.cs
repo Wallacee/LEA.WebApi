@@ -2,9 +2,11 @@
 using LEA.WebApi.Domain.Enuns;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LEA.WebApi.Domain.Models
 {
+    [Table("Leagues")]
     public class League : Entity
     {
         [StringLength(150)]
