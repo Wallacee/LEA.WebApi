@@ -4,4 +4,13 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LEA.WebApi.Dal\LEA.WebApi.Dal.csproj" />
+    <ProjectReference Include="..\LEA.WebApi.Domain\LEA.WebApi.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
