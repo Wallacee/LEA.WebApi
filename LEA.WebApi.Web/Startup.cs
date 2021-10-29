@@ -1,4 +1,5 @@
 using LEA.WebApi.Dal;
+using LEA.WebApi.IoC;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ namespace LEA.WebApi.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<Context>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
+            NativeInjector.RegisterService(services);
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
