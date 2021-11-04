@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LEA.WebApi.Dal\LEA.WebApi.Dal.csproj" />
     <ProjectReference Include="..\LEA.WebApi.Domain\LEA.WebApi.Domain.csproj" />
+    <ProjectReference Include="..\LEA.WebApi.Service\LEA.WebApi.Service.csproj" />
   </ItemGroup>
 
 </Project>
