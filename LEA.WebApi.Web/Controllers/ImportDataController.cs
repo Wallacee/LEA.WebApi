@@ -1,9 +1,9 @@
 ﻿using LEA.WebApi.Service.Interfaces;
-using LEA.WebApi.Service.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
+using System.Net.Http.Headers;
 
 namespace LEA.WebApi.Web.Controllers
 {
@@ -11,28 +11,46 @@ namespace LEA.WebApi.Web.Controllers
     [Route("[controller]")]
     public class ImportDataController : Controller
     {
+        private readonly IConfiguration configuration;
         private readonly IUploadService uploadService;
         public IUploadService UploadService => uploadService;
-        public ImportDataController(IUploadService uploadService)
+        public IConfiguration Configuration => configuration;
+        public ImportDataController(IUploadService _uploadService, IConfiguration _configuration)
         {
-            this.uploadService = uploadService;
+            this.uploadService = _uploadService;
+            this.configuration = _configuration;
         }
 
-        [HttpPost]
-        public string UploadData([FromForm] IFormFile formFile)
+        [HttpPost, DisableRequestSizeLimit]
+        [Route("UploadCSV")]
+        public IActionResult Upload()
         {
-            if (formFile != null)
+            try
             {
-                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-                FileStream fileStream = System.IO.File.Create(formFile.FileName);
-                fileStream.Close();
-                FileStream _fileStream = System.IO.File.O(formFile.FileName, FileMode.Open, FileAccess.Read);
-                uploadService.Upload(_fileStream);
-                fileStream.Close();
-                
+                var file = Request.Form.Files[0];
+                var folderName = Configuration.GetValue<string>("ApiConstant:UploadFolderFile");
+                var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                if (!System.IO.Directory.Exists(folderName))
+                    Directory.CreateDirectory(folderName);
+                if (file.Length > 0)
+                {
+                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                    var dbPath = Path.Combine(folderName, fileName);
+                    using (var stream = new FileStream(dbPath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+                    return Ok(new { dbPath });
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
-            return "show";
-
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
         }
 
     }

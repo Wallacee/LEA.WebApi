@@ -20,7 +20,7 @@ namespace LEA.WebApi.Dal
             {
                 IConfigurationRoot configuration = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
+                var connectionString = configuration.GetConnectionString("DefaultConnectionSQLServer");
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }
