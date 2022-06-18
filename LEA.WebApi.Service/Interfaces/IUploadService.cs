@@ -4,6 +4,6 @@ namespace LEA.WebApi.Service.Interfaces
 {
     public interface IUploadService
     {
-        string Upload(FileStream file);
+        string UpdateDatabaseByFileCSV(string fileName);
     }
 }
