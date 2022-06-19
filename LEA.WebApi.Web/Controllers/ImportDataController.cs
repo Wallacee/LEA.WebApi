@@ -1,6 +1,8 @@
 ﻿using LEA.WebApi.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using System;
 using System.IO;
 using System.Net.Http.Headers;
@@ -13,12 +15,16 @@ namespace LEA.WebApi.Web.Controllers
     {
         private readonly IConfiguration configuration;
         private readonly IUploadService uploadService;
+        private readonly ILogger<ImportDataController> logger;
         public IUploadService UploadService => uploadService;
         public IConfiguration Configuration => configuration;
-        public ImportDataController(IUploadService _uploadService, IConfiguration _configuration)
+        public ILogger<ImportDataController> Logger => logger;
+
+        public ImportDataController(IUploadService _uploadService, IConfiguration _configuration, ILogger<ImportDataController> logger)
         {
             this.uploadService = _uploadService;
             this.configuration = _configuration;
+            this.logger = logger;
         }
 
         [HttpPost, DisableRequestSizeLimit]
@@ -27,6 +33,7 @@ namespace LEA.WebApi.Web.Controllers
         {
             try
             {
+                Logger.LogInformation("Iniciando upload de arquivo csv...");
                 var file = Request.Form.Files[0];
                 var folderName = Configuration.GetValue<string>("ApiConstant:UploadFolderFile");
                 var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
