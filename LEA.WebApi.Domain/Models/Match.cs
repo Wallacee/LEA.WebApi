@@ -9,13 +9,17 @@ namespace LEA.WebApi.Domain.Models
     [Table("Matches")]
     public class Match : Entity
     {
+        public virtual Team HomeTeam { get; set; }
+        public virtual Team AwayTeam { get; set; }
+        public virtual MatchStatistics HomeStatistics { get; set; }
+        public virtual MatchStatistics AwayStatistics { get; set; }
+        public virtual Referee Referee { get; set; }
         [DataType(DataType.Date)]
         public DateTime Schedule { get; set; }
-        public virtual MatchStatistics Home { get; set; }
-        public virtual MatchStatistics Away { get; set; }
-        public Referee Referee { get; set; }
-        public int? HomeId { get; set; }
-        public int? AwayId { get; set; }
+        public int HomeTeamId { get; set; }
+        public int AwayTeamId { get; set; }
+        public int? HomeStatisticsId { get; set; }
+        public int? AwayStatisticsId { get; set; }
         public int RefereeId { get; set; }
     }
 }

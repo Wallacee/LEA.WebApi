@@ -47,7 +47,7 @@ namespace LEA.WebApi.Web.Controllers
                     {
                         file.CopyTo(stream);
                     }
-                    UploadService.UpdateDatabaseByFileCSV(fileName);
+                    UploadService.UpdateDatabaseByCSVFile(fileName);
                     return Ok(new { dbPath });
                 }
                 else

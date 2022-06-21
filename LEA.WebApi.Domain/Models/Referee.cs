@@ -10,6 +10,6 @@ namespace LEA.WebApi.Domain.Models
     {
         [StringLength(150)]
         public string Name { get; set; }
-        public List<Match> Matches { get; set; }
+        public virtual List<Match> Matches { get; set; }
     }
 }

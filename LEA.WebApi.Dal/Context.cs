@@ -34,26 +34,26 @@ namespace LEA.WebApi.Dal
                 .WithOne(t => t.League)
                 .HasForeignKey(t => t.LeagueId).IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
-
+  
             modelBuilder
                 .Entity<Team>()
-                .HasMany<MatchStatistics>(t => t.MatchStatsList)
-                .WithOne(ms => ms.Team)
-                .HasForeignKey(ms => ms.TeamId).IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasIndex(n => n.Name)
+                .IsUnique();
 
             modelBuilder
                 .Entity<Match>()
-                .HasOne(m => m.Home)
-                .WithOne()
-                .HasForeignKey<Match>(m => m.HomeId).IsRequired()
+                .HasOne<Team>(m => m.HomeTeam)
+                .WithMany(t => t.HomeMatches)
+                .HasForeignKey(m => m.HomeTeamId)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder
                 .Entity<Match>()
-                .HasOne(m => m.Away)
-                .WithOne()
-                .HasForeignKey<Match>(m => m.AwayId).IsRequired()
+                .HasOne<Team>(m => m.AwayTeam)
+                .WithMany(t => t.AwayMatches)
+                .HasForeignKey(m => m.AwayTeamId)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder
@@ -63,6 +63,20 @@ namespace LEA.WebApi.Dal
                 .HasForeignKey(r => r.RefereeId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            modelBuilder
+                .Entity<Match>()
+                .HasOne(m => m.HomeStatistics)
+                .WithOne()
+                .HasForeignKey<Match>(m => m.HomeStatisticsId).IsRequired()
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder
+                .Entity<Match>()
+                .HasOne(m => m.AwayStatistics)
+                .WithOne()
+                .HasForeignKey<Match>(m => m.AwayStatisticsId).IsRequired()
+                .OnDelete(DeleteBehavior.NoAction);
         }
 
 

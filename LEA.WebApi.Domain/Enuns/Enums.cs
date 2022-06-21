@@ -6,7 +6,8 @@
         Germany = 2,
         Italy = 3,
         Netherlands = 4,
-        Spain = 5
+        Spain = 5,
+        Undefined = -1
     }
     public enum Scoreboard
     {

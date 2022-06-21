@@ -8,12 +8,14 @@ namespace LEA.WebApi.Domain.Models
     [Table("Teams")]
     public class Team : Entity
     {
+        
         [StringLength(150)]
         public string Name { get; set; }
         [StringLength(200)]
         public string Shield { get; set; }
         public League League { get; set; }
         public int LeagueId { get; set; }
-        public List<MatchStatistics> MatchStatsList { get; set; }
+        public virtual List<Match> HomeMatches  { get; set; }
+        public virtual List<Match> AwayMatches { get; set; }
     }
 }

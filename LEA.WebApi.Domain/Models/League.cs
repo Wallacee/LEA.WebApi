@@ -15,6 +15,6 @@ namespace LEA.WebApi.Domain.Models
         public short Division { get; set; }
         [StringLength(200)]
         public string Shield { get; set; }
-        public List<Team> Teams { get; set; }
+        public virtual List<Team> Teams { get; set; }
     }
 }
