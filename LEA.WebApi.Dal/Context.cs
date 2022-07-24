@@ -34,7 +34,7 @@ namespace LEA.WebApi.Dal
                 .WithOne(t => t.League)
                 .HasForeignKey(t => t.LeagueId).IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
-  
+
             modelBuilder
                 .Entity<Team>()
                 .HasIndex(n => n.Name)
@@ -61,14 +61,15 @@ namespace LEA.WebApi.Dal
                 .HasOne<Referee>(m => m.Referee)
                 .WithMany(r => r.Matches)
                 .HasForeignKey(r => r.RefereeId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-            
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.NoAction);
+
             modelBuilder
                 .Entity<Match>()
                 .HasOne(m => m.HomeStatistics)
                 .WithOne()
                 .HasForeignKey<Match>(m => m.HomeStatisticsId).IsRequired()
+                .IsRequired(true)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder
@@ -76,6 +77,7 @@ namespace LEA.WebApi.Dal
                 .HasOne(m => m.AwayStatistics)
                 .WithOne()
                 .HasForeignKey<Match>(m => m.AwayStatisticsId).IsRequired()
+                .IsRequired(true)
                 .OnDelete(DeleteBehavior.NoAction);
         }
 

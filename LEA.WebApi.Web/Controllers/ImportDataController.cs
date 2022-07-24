@@ -37,6 +37,7 @@ namespace LEA.WebApi.Web.Controllers
                 var file = Request.Form.Files[0];
                 var folderName = Configuration.GetValue<string>("ApiConstant:UploadFolderFile");
                 var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+
                 if (!System.IO.Directory.Exists(folderName))
                     Directory.CreateDirectory(folderName);
                 if (file.Length > 0)
@@ -47,7 +48,8 @@ namespace LEA.WebApi.Web.Controllers
                     {
                         file.CopyTo(stream);
                     }
-                    UploadService.UpdateDatabaseByCSVFile(fileName);
+                    bool uploadResult = UploadService.UpdateDatabaseByCSVFile(fileName);
+                    System.IO.File.Delete(Path.Combine(pathToSave, fileName));
                     return Ok(new { dbPath });
                 }
                 else

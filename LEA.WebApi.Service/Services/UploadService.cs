@@ -43,7 +43,7 @@ namespace LEA.WebApi.Service.Services
             this.configuration = configuration;
             this.matchStatisticsRepository = matchStatisticsRepository;
         }
-        public string UpdateDatabaseByCSVFile(string fileName)
+        public bool UpdateDatabaseByCSVFile(string fileName)
         {
             string folderName = Configuration.GetSection("ApiConstant").GetSection("UploadFolderFile").Value;
             string filePath = Path.Combine(folderName, fileName);
@@ -62,17 +62,20 @@ namespace LEA.WebApi.Service.Services
                 Team awayTeam = AwayTeamLoad(fields, league);
                 if (MatchRepository.FindByScheduleDateHomeAway(schedule, homeTeam.Name, awayTeam.Name) == null)
                 {
-                    Referee referee = RefereeLoad(fields);
-                    MatchStatistics homeMatchStatistics = HomeMatchStatisticsLoad(fields);
-                    MatchStatistics awayMatchStatistics = AwayMatchStatisticsLoad(fields);
-                    MatchLoad(schedule, referee, homeTeam, awayTeam, homeMatchStatistics, awayMatchStatistics);
+                    Referee referee = null;
+                    if (league.Coutry == Country.England)
+                        referee = RefereeLoad(fields);
+                    MatchStatistics homeMatchStatistics = HomeMatchStatisticsLoad(fields, league.Coutry);
+                    MatchStatistics awayMatchStatistics = AwayMatchStatisticsLoad(fields, league.Coutry);
+                    if (league.Coutry == Country.England)
+                        MatchLoad(schedule, referee, homeTeam, awayTeam, homeMatchStatistics, awayMatchStatistics);
+                    else
+                        MatchLoad(schedule, null, homeTeam, awayTeam, homeMatchStatistics, awayMatchStatistics);
                 }
             }
-            return "show";
+            return true;
         }
-
-        
-        #region method reord
+        #region method record
         private void MatchLoad(DateTime schedule, Referee referee, Team homeTeam, Team awayTeam, MatchStatistics homeMatchStatistics, MatchStatistics awayMatchStatistics)
         {
             Match match = new()
@@ -82,50 +85,49 @@ namespace LEA.WebApi.Service.Services
                 AwayTeamId = awayTeam.Id,
                 HomeStatisticsId = homeMatchStatistics.Id,
                 AwayStatisticsId = awayMatchStatistics.Id,
-                RefereeId = referee.Id
+                RefereeId = referee?.Id
             };
             MatchRepository.Save(match);
         }
-
-        private MatchStatistics AwayMatchStatisticsLoad(string[] fields)
+        private MatchStatistics AwayMatchStatisticsLoad(string[] fields, Country country)
         {
+            int setupCellUpload = country == Country.England ? 0 : 1;
             MatchStatistics awayMatchStatistics = new()
             {
                 GoalsHalfTime = ParseShort(fields[9]),
                 GoalsFullTime = ParseShort(fields[6]),
                 ResultHalfTime = FindResult(goals: fields[9], rivalGoals: fields[8]),
                 ResultFullTime = FindResult(goals: fields[6], rivalGoals: fields[5]),
-                Shots = ParseShort(fields[13]),
-                ShotsOnTarget = ParseShort(fields[15]),
-                Corners = ParseShort(fields[19]),
-                FoulsCommitted = ParseShort(fields[17]),
-                Yellow = ParseShort(fields[21]),
-                Red = ParseShort(fields[23])
+                Shots = ParseShort(fields[13 - setupCellUpload]),
+                ShotsOnTarget = ParseShort(fields[15 - setupCellUpload]),
+                Corners = ParseShort(fields[19 - setupCellUpload]),
+                FoulsCommitted = ParseShort(fields[17 - setupCellUpload]),
+                Yellow = ParseShort(fields[21 - setupCellUpload]),
+                Red = ParseShort(fields[23 - setupCellUpload])
 
             };
             MatchStatisticsRepository.Create(awayMatchStatistics);
             return awayMatchStatistics;
         }
-
-        private MatchStatistics HomeMatchStatisticsLoad(string[] fields)
+        private MatchStatistics HomeMatchStatisticsLoad(string[] fields, Country country)
         {
+            int setupCellUpload = country == Country.England ? 0 : 1;
             MatchStatistics homeMatchStatistics = new()
             {
                 GoalsHalfTime = ParseShort(fields[8]),
                 GoalsFullTime = ParseShort(fields[5]),
                 ResultHalfTime = FindResult(goals: fields[8], rivalGoals: fields[9]),
                 ResultFullTime = FindResult(goals: fields[5], rivalGoals: fields[6]),
-                Shots = ParseShort(fields[12]),
-                ShotsOnTarget = ParseShort(fields[14]),
-                Corners = ParseShort(fields[18]),
-                FoulsCommitted = ParseShort(fields[16]),
-                Yellow = ParseShort(fields[20]),
-                Red = ParseShort(fields[22])
+                Shots = ParseShort(fields[12 - setupCellUpload]),
+                ShotsOnTarget = ParseShort(fields[14 - setupCellUpload]),
+                Corners = ParseShort(fields[18 - setupCellUpload]),
+                FoulsCommitted = ParseShort(fields[16 - setupCellUpload]),
+                Yellow = ParseShort(fields[20 - setupCellUpload]),
+                Red = ParseShort(fields[22 - setupCellUpload])
             };
             MatchStatisticsRepository.Create(homeMatchStatistics);
             return homeMatchStatistics;
         }
-
         private Team AwayTeamLoad(string[] fields, League league)
         {
             Team awayTeam = TeamRepository.FindByName(fields[4]);
@@ -141,7 +143,6 @@ namespace LEA.WebApi.Service.Services
 
             return awayTeam;
         }
-
         private Team HomeTeamLoad(string[] fields, League league)
         {
             Team homeTeam = TeamRepository.FindByName(fields[3]);
@@ -158,7 +159,6 @@ namespace LEA.WebApi.Service.Services
 
             return homeTeam;
         }
-
         private League LeagueLoad(string[] fields)
         {
             League league = LeagueRepository.FindByName(FindLeagueName(fields[0]));
@@ -175,7 +175,6 @@ namespace LEA.WebApi.Service.Services
 
             return league;
         }
-
         private Referee RefereeLoad(string[] fields)
         {
             Referee referee = RefereeRepository.FindByName(fields[11]);
@@ -208,6 +207,12 @@ namespace LEA.WebApi.Service.Services
             return v switch
             {
                 "E0" => "Premier League",
+                "SP1" => "La Liga",
+                "D1" => "Bundesliga",
+                "I1" => "Serie A",
+                "F1" => "Ligue 1",
+                "N1" => "Eredivise",
+                "P1" => "Liga 1",
                 _ => "Undefined",
             };
         }
@@ -222,6 +227,12 @@ namespace LEA.WebApi.Service.Services
             return value switch
             {
                 "E0" => Country.England,
+                "SP1" => Country.Spain,
+                "D1" => Country.Germany,
+                "I1" => Country.Italy,
+                "F1" => Country.France,
+                "N1" => Country.Netherlands,
+                "P1" => Country.Portugal,
                 _ => Country.Undefined,
             };
         }
@@ -243,6 +254,12 @@ namespace LEA.WebApi.Service.Services
             return division switch
             {
                 "E0" => 1,
+                "SP1" => 1,
+                "D1" => 1,
+                "I1" => 1,
+                "F1" => 1,
+                "N1" => 1,
+                "P1" => 1,
                 _ => -1,
             };
         }

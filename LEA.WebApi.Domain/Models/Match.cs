@@ -18,8 +18,8 @@ namespace LEA.WebApi.Domain.Models
         public DateTime Schedule { get; set; }
         public int HomeTeamId { get; set; }
         public int AwayTeamId { get; set; }
-        public int? HomeStatisticsId { get; set; }
-        public int? AwayStatisticsId { get; set; }
-        public int RefereeId { get; set; }
+        public int HomeStatisticsId { get; set; }
+        public int AwayStatisticsId { get; set; }
+        public int? RefereeId { get; set; }
     }
 }
