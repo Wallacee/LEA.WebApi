@@ -17,4 +17,16 @@
         Lost = 2,
         Draw = 3
     }
+
+    public enum StatisticKind
+    {
+        GoalsFullTime = 0,
+        GoalsHalfTime = 1,
+        Shots=  2,
+        ShotsOnTarget = 3,
+        Corners = 4,
+        Fols=5,
+        Yellow= 6,
+        Red= 7
+    }
 }
