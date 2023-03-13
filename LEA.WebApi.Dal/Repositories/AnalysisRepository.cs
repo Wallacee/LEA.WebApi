@@ -20,7 +20,7 @@ namespace LEA.WebApi.Dal.Repositories
         {
             this.context = context;
         }
-
+        #region Full_Time_Goals
         public List<short> GetMadeGoalsFullTimeHome(int hometeamId, int amountGame)
         {
             return Context.Matches.Join(Context.MatchesStatistics,
@@ -80,6 +80,7 @@ namespace LEA.WebApi.Dal.Repositories
                                         .ToList();
 
         }
+        #endregion
 
     }
 }
