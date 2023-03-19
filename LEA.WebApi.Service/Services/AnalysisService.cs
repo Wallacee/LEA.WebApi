@@ -28,14 +28,15 @@ namespace LEA.WebApi.Service.Services
 
         public AnalysisViewModel MatchGoalsFullTime(int homeTeamId, int awayTeamId, int statisticId, int matchCount)
         {
-            AnalysisViewModel analysisViewModel = new()
+            return new AnalysisViewModel()
             {
+                NameTeamAgainstHome = AnalysisRepository.GetTeamNameAgainstHome(homeTeamId, matchCount),
+                NameTeamAgainstAway = AnalysisRepository.GetTeamNameAgainstAway(awayTeamId, matchCount),
                 MadeByHome = AnalysisRepository.GetMadeGoalsFullTimeHome(homeTeamId, matchCount),
                 TakenByHome = analysisRepository.GetTakenGoalsFullTimeHome(homeTeamId, matchCount),
                 MadeByAway = AnalysisRepository.GetMadeGoalsFullTimeAway(awayTeamId, matchCount),
                 TakenByAway = analysisRepository.GetTakenGoalsFullTimeAway(awayTeamId, matchCount)
             };
-            return analysisViewModel;
         }
     }
 }

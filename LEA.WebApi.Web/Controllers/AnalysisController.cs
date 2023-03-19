@@ -23,5 +23,6 @@ namespace LEA.WebApi.Web.Controllers
         {
             return StatusCode(200, AnalysisService.MatchGoalsFullTime(homeTeamId, awayTeamId, statisticId, matchCount));
         }
+
     }
 }

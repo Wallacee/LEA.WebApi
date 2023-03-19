@@ -9,6 +9,9 @@ namespace LEA.WebApi.Service.ViewModel
     public class AnalysisViewModel
     {
         public AnalysisViewModel() { }
+
+        public List<string> NameTeamAgainstHome { get; set; }
+        public List<string> NameTeamAgainstAway { get; set; }
         public List<short> MadeByHome { get; set; }
         public List<short> TakenByHome { get; set; }
         public List<short> MadeByAway { get; set; }
