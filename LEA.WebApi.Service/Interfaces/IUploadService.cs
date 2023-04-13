@@ -1,9 +1,11 @@
-﻿using System.IO;
+﻿using LEA.WebApi.Service.ViewModel;
+using System.Collections.Generic;
+using System.IO;
 
 namespace LEA.WebApi.Service.Interfaces
 {
     public interface IUploadService
     {
-        bool UpdateDatabaseByCSVFile(string fileName);
+        List<UpdateMatchesReportViewModel> UpdateDatabaseByCSVFile(string fileName);
     }
 }

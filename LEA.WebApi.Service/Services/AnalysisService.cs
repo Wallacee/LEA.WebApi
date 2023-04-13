@@ -24,18 +24,26 @@ namespace LEA.WebApi.Service.Services
             this.analysisRepository = analysisRepository;
         }
 
-
-
-        public AnalysisViewModel MatchGoalsFullTime(int homeTeamId, int awayTeamId, int statisticId, int matchCount)
+        public GeneralDataViewModel GeneralMatchData(int homeTeamId, int awayTeamId, int matchCount)
         {
-            return new AnalysisViewModel()
+            return new GeneralDataViewModel()
             {
                 NameTeamAgainstHome = AnalysisRepository.GetTeamNameAgainstHome(homeTeamId, matchCount),
                 NameTeamAgainstAway = AnalysisRepository.GetTeamNameAgainstAway(awayTeamId, matchCount),
+                ScheduleHome = AnalysisRepository.GetScheduleHome(homeTeamId, matchCount),
+                ScheduleAwyay = analysisRepository.GetScheduleAway(awayTeamId, matchCount),
+                
+            };
+        }
+        public AnalysisViewModel MatchGoalsFullTime(int homeTeamId, int awayTeamId, int matchCount)
+        {
+            return new AnalysisViewModel()
+            {
                 MadeByHome = AnalysisRepository.GetMadeGoalsFullTimeHome(homeTeamId, matchCount),
                 TakenByHome = analysisRepository.GetTakenGoalsFullTimeHome(homeTeamId, matchCount),
                 MadeByAway = AnalysisRepository.GetMadeGoalsFullTimeAway(awayTeamId, matchCount),
-                TakenByAway = analysisRepository.GetTakenGoalsFullTimeAway(awayTeamId, matchCount)
+                TakenByAway = analysisRepository.GetTakenGoalsFullTimeAway(awayTeamId, matchCount),
+                StatisticKind = Domain.Enuns.StatisticKind.GoalsFullTime
             };
         }
     }

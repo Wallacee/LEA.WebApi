@@ -2,8 +2,10 @@
 using LEA.WebApi.Domain.Interfaces;
 using LEA.WebApi.Domain.Models;
 using LEA.WebApi.Service.Interfaces;
+using LEA.WebApi.Service.ViewModel;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -43,13 +45,14 @@ namespace LEA.WebApi.Service.Services
             this.configuration = configuration;
             this.matchStatisticsRepository = matchStatisticsRepository;
         }
-        public bool UpdateDatabaseByCSVFile(string fileName)
+        public List<UpdateMatchesReportViewModel> UpdateDatabaseByCSVFile(string fileName)
         {
             string folderName = Configuration.GetSection("ApiConstant").GetSection("UploadFolderFile").Value;
             string filePath = Path.Combine(folderName, fileName);
             using FileStream fileStream = new(filePath, FileMode.Open);
             using StreamReader streamReader = new(fileStream, Encoding.GetEncoding(0));
             string line = streamReader.ReadLine();
+            List<UpdateMatchesReportViewModel> updateMatchesReportViewModel = new();
             while (!streamReader.EndOfStream)
             {
                 line = streamReader.ReadLine();
@@ -60,9 +63,11 @@ namespace LEA.WebApi.Service.Services
                 League league = LeagueLoad(fields);
                 Team homeTeam = HomeTeamLoad(fields, league);
                 Team awayTeam = AwayTeamLoad(fields, league);
+                bool saved = false;
                 if (MatchRepository.FindByScheduleDateHomeAway(schedule, homeTeam.Name, awayTeam.Name) == null)
                 {
                     Referee referee = null;
+
                     if (league.Coutry == Country.England)
                         referee = RefereeLoad(fields);
                     MatchStatistics homeMatchStatistics = HomeMatchStatisticsLoad(fields, league.Coutry);
@@ -71,9 +76,22 @@ namespace LEA.WebApi.Service.Services
                         MatchLoad(schedule, referee, homeTeam, awayTeam, homeMatchStatistics, awayMatchStatistics);
                     else
                         MatchLoad(schedule, null, homeTeam, awayTeam, homeMatchStatistics, awayMatchStatistics);
+                    saved = true;
                 }
+                updateMatchesReportViewModel.Add(
+                    new UpdateMatchesReportViewModel()
+                    {
+                        FileName = fileName,
+                        League = league.Name,
+                        Schedule = schedule.ToString(),
+                        Home = homeTeam.Name,
+                        Away = awayTeam.Name,
+                        Creation = DateTime.Now.ToString(),
+                        Saved = saved
+                    });
             }
-            return true;
+            
+            return updateMatchesReportViewModel;
         }
         #region method record
         private void MatchLoad(DateTime schedule, Referee referee, Team homeTeam, Team awayTeam, MatchStatistics homeMatchStatistics, MatchStatistics awayMatchStatistics)

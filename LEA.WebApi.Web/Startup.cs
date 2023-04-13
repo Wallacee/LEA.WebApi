@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using System;
 
 namespace LEA.WebApi.Web
 {
@@ -29,6 +30,8 @@ namespace LEA.WebApi.Web
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "LEA.WebApi.Web", Version = "v1" });
             });
+
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,6 +43,18 @@ namespace LEA.WebApi.Web
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LEA.WebApi.Web v1"));
             }
+
+            app.UseCors(builder =>
+            {
+                builder
+                   .WithOrigins("http://localhost:4200", "https://localhost:4200")
+                   .SetIsOriginAllowedToAllowWildcardSubdomains()
+                   .AllowAnyHeader()
+                   .AllowCredentials()
+                   .WithMethods("GET", "PUT", "POST", "DELETE", "OPTIONS")
+                   .SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
+            }
+);
 
             app.UseHttpsRedirection();
 

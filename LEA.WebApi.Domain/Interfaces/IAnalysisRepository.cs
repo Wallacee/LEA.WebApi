@@ -10,6 +10,9 @@ namespace LEA.WebApi.Domain.Interfaces
         List<short> GetMadeGoalsFullTimeAway(int awayTeam, int amountGame);
         List<short> GetTakenGoalsFullTimeHome(int homeTeam, int amountGame);
         List<short> GetTakenGoalsFullTimeAway(int awayTeam, int amountGame);
+        List<string> GetScheduleHome(int homeTeamId, int amountGame);
+        List<string> GetScheduleAway(int awayTeamId, int amountGame);
+
 
     }
 }

@@ -17,12 +17,22 @@ namespace LEA.WebApi.Web.Controllers
             this.analysisService = analysisService;
         }
 
+
+        [HttpPost, DisableRequestSizeLimit]
+        [Route("GeneralMatchData")]
+        public IActionResult GeneralMatchData(int homeTeamId, int awayTeamId, int matchCount)
+        {
+            return StatusCode(200, AnalysisService.GeneralMatchData(homeTeamId, awayTeamId, matchCount));
+        }
+
         [HttpPost, DisableRequestSizeLimit]
         [Route("MatchGoalsFullTime")]
-        public IActionResult MatchGoalsFullTime(int homeTeamId, int awayTeamId, int statisticId, int matchCount)
+        public IActionResult MatchGoalsFullTime(int homeTeamId, int awayTeamId, int matchCount)
         {
-            return StatusCode(200, AnalysisService.MatchGoalsFullTime(homeTeamId, awayTeamId, statisticId, matchCount));
+            return StatusCode(200, AnalysisService.MatchGoalsFullTime(homeTeamId, awayTeamId, matchCount));
         }
+
+
 
     }
 }

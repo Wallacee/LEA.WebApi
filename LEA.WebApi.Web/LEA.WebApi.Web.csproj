@@ -21,4 +21,8 @@
     <ProjectReference Include="..\LEA.WebApi.Service\LEA.WebApi.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Upload_Data\" />
+  </ItemGroup>
+
 </Project>

@@ -47,6 +47,23 @@ namespace LEA.WebApi.Dal.Repositories
                 .Select(_awayTeam => _awayTeam.homeTeam.Name)
                 .ToList();
         }
+
+        public List<string> GetScheduleHome(int homeTeamId, int amountGame)
+        {
+            return Context.Matches.Where(match => match.HomeTeamId == homeTeamId)
+                                  .Take(amountGame)
+                                  .OrderByDescending(match => match.Id)
+                                  .Select(match => match.Schedule.ToString("dd/MM/yyyy HH:mm dddd"))
+                                  .ToList();
+        }
+        public List<string> GetScheduleAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Where(match => match.AwayTeamId == awayTeamId)
+                                  .Take(amountGame)
+                                  .OrderByDescending(match => match.Id)
+                                  .Select(match => match.Schedule.ToString("dd/MM/yyyy HH:mm dddd"))
+                                  .ToList();
+        }
         #endregion
 
         #region Full_Time_Goals
