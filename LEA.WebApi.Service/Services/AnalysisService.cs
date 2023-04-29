@@ -28,7 +28,7 @@ namespace LEA.WebApi.Service.Services
             List<Team> home = AnalysisRepository.GetTeamAgainstHome(homeTeamId, matchCount);
             List<Team> away = AnalysisRepository.GetTeamAgainstAway(awayTeamId, matchCount);
 
-            List<int> againstHomeId= new();
+            List<int> againstHomeId = new();
             List<string> againstHomeName = new();
             List<int> againstAwayId = new();
             List<string> againstAwayName = new();
@@ -50,8 +50,8 @@ namespace LEA.WebApi.Service.Services
                 againstAwayName.Add(away[i].Name);
 
                 List<TableLeagueViewModel> tableLeagueViewModels = this.MakeLeagueTable(scheduleHome[i], matchList);
-                positiontHome.Add(tableLeagueViewModels.FindIndex(t => t.IdTeam == homeTeamId)+1);
-                positionAgainstHome.Add(tableLeagueViewModels.FindIndex(t => t.IdTeam == againstHomeId[i])+1);
+                positiontHome.Add(tableLeagueViewModels.FindIndex(t => t.IdTeam == homeTeamId) + 1);
+                positionAgainstHome.Add(tableLeagueViewModels.FindIndex(t => t.IdTeam == againstHomeId[i]) + 1);
 
                 tableLeagueViewModels = this.MakeLeagueTable(scheduleAway[i], matchList);
                 positionAway.Add(tableLeagueViewModels.FindIndex(t => t.IdTeam == awayTeamId) + 1);
@@ -63,7 +63,7 @@ namespace LEA.WebApi.Service.Services
             {
                 NameTeamAgainstHome = againstHomeName,
                 NameTeamAgainstAway = againstAwayName,
-                ScheduleHome = scheduleHome.ConvertAll(x=>x.ToString("dd/MM/yy ddd")),
+                ScheduleHome = scheduleHome.ConvertAll(x => x.ToString("dd/MM/yy ddd")),
                 ScheduleAway = scheduleAway.ConvertAll(x => x.ToString("dd/MM/yy ddd")),
                 PositionHome = positiontHome,
                 PositionAgainstHome = positionAgainstHome,
@@ -74,7 +74,7 @@ namespace LEA.WebApi.Service.Services
 
         public LeaguesViewModel Leagues()
         {
-            
+
             return new LeaguesViewModel()
             {
                 Leagues = AnalysisRepository.GetAllLeagues()
@@ -101,6 +101,7 @@ namespace LEA.WebApi.Service.Services
                                               Name = l.Name,
                                               ShieldUrl = l.Shield
                                           })
+                                          .OrderBy(team => team.Name)
                                           .ToList()
             };
         }
@@ -199,7 +200,7 @@ namespace LEA.WebApi.Service.Services
             }
 
             return tableLeagueViewModel.OrderByDescending(t => t.Points).ThenByDescending(t => t.GoalDifference).ThenByDescending(t => t.GoalsPro).ToList();
-            
+
         }
 
         private int GetPointsValue(MatchStatistics matchStatistics)

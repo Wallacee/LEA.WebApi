@@ -48,8 +48,15 @@ namespace LEA.WebApi.Web.Controllers
         }
 
         [HttpGet]
-        [Route("MatchGoalsFullTime")]
+        [Route("MatchGoalsHalfTime")]
         public IActionResult MatchGoalsFullTime(int homeTeamId, int awayTeamId, int matchCount)
+        {
+            return StatusCode(200, AnalysisService.MatchGoalsHalfTime(homeTeamId, awayTeamId, matchCount));
+        }
+
+        [HttpGet]
+        [Route("MatchGoalsFullTime")]
+        public IActionResult MatchGoalsHalfTime(int homeTeamId, int awayTeamId, int matchCount)
         {
             return StatusCode(200, AnalysisService.MatchGoalsFullTime(homeTeamId, awayTeamId, matchCount));
         }
