@@ -16,5 +16,6 @@ namespace LEA.WebApi.Domain.Models
         [StringLength(200)]
         public string Shield { get; set; }
         public virtual List<Team> Teams { get; set; }
+        public virtual List<Match> Matches { get; set; }
     }
 }

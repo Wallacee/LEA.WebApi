@@ -13,6 +13,8 @@ namespace LEA.WebApi.Domain.Models
         public virtual Team AwayTeam { get; set; }
         public virtual MatchStatistics HomeStatistics { get; set; }
         public virtual MatchStatistics AwayStatistics { get; set; }
+        public virtual League League { get; set; }
+
         public virtual Referee Referee { get; set; }
         [DataType(DataType.Date)]
         public DateTime Schedule { get; set; }
@@ -20,6 +22,7 @@ namespace LEA.WebApi.Domain.Models
         public int AwayTeamId { get; set; }
         public int HomeStatisticsId { get; set; }
         public int AwayStatisticsId { get; set; }
+        public int LeagueId { get; set; }
         public int? RefereeId { get; set; }
     }
 }

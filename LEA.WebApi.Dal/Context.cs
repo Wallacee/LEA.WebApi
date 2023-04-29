@@ -79,6 +79,14 @@ namespace LEA.WebApi.Dal
                 .HasForeignKey<Match>(m => m.AwayStatisticsId).IsRequired()
                 .IsRequired(true)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder
+                        .Entity<Match>()
+                        .HasOne<League>(m => m.League)
+                        .WithMany(l => l.Matches)
+                        .HasForeignKey(l => l.LeagueId)
+                        .IsRequired(false)
+                        .OnDelete(DeleteBehavior.NoAction);
         }
 
 

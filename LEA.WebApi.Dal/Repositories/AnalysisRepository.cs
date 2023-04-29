@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace LEA.WebApi.Dal.Repositories
@@ -21,7 +20,7 @@ namespace LEA.WebApi.Dal.Repositories
             this.context = context;
         }
         #region General_Analysis_Data
-        public List<string> GetTeamNameAgainstHome(int homeTeamId, int amountGame)
+        public List<Team> GetTeamAgainstHome(int homeTeamId, int amountGame)
         {
             return Context.Matches.Join(Context.Teams,
                                                         match => match.AwayTeamId,
@@ -31,10 +30,14 @@ namespace LEA.WebApi.Dal.Repositories
                 .Where(_match => _match.match.HomeTeamId == homeTeamId)
                 .Take(amountGame)
                 .OrderByDescending(_match => _match.match.Id)
-                .Select(_awayTeam => _awayTeam.awayTeam.Name)
-                .ToList();
+                .Select(team=>new Team() 
+                {
+                    Id = team.awayTeam.Id,
+                    Name = team.awayTeam.Name,
+                    LeagueId = team.awayTeam.LeagueId
+                }).ToList();
         }
-        public List<string> GetTeamNameAgainstAway(int awayTeamId, int amountGame)
+        public List<Team> GetTeamAgainstAway(int awayTeamId, int amountGame)
         {
             return Context.Matches.Join(Context.Teams,
                                                         match => match.HomeTeamId,
@@ -44,24 +47,29 @@ namespace LEA.WebApi.Dal.Repositories
                 .Where(_match => _match.match.AwayTeamId == awayTeamId)
                 .Take(amountGame)
                 .OrderByDescending(_match => _match.match.Id)
-                .Select(_awayTeam => _awayTeam.homeTeam.Name)
+                .Select(team => new Team()
+                {
+                    Id = team.homeTeam.Id,
+                    Name = team.homeTeam.Name,
+                    LeagueId = team.homeTeam.LeagueId
+                })
                 .ToList();
         }
 
-        public List<string> GetScheduleHome(int homeTeamId, int amountGame)
+        public List<DateTime> GetScheduleHome(int homeTeamId, int amountGame)
         {
             return Context.Matches.Where(match => match.HomeTeamId == homeTeamId)
                                   .Take(amountGame)
                                   .OrderByDescending(match => match.Id)
-                                  .Select(match => match.Schedule.ToString("dd/MM/yy HH:mm ddd"))
+                                  .Select(match => match.Schedule)
                                   .ToList();
         }
-        public List<string> GetScheduleAway(int awayTeamId, int amountGame)
+        public List<DateTime> GetScheduleAway(int awayTeamId, int amountGame)
         {
             return Context.Matches.Where(match => match.AwayTeamId == awayTeamId)
                                   .Take(amountGame)
                                   .OrderByDescending(match => match.Id)
-                                  .Select(match => match.Schedule.ToString("dd/MM/yy HH:mm ddd"))
+                                  .Select(match => match.Schedule)
                                   .ToList();
         }
 
@@ -81,6 +89,24 @@ namespace LEA.WebApi.Dal.Repositories
         public short GetAwayAmountTeamMatch(int idAwayTeam)
         {
             return (short)Context.Matches.Where(teamMatch => teamMatch.HomeTeamId == idAwayTeam).Count();
+        }
+
+        public List<Match> GetAllMatchesByLeague(int idLeague)
+        {
+            return Context.Matches
+                .Join(Context.MatchesStatistics, match => match.HomeStatisticsId, matchStatisticHome => matchStatisticHome.Id, (match, matchStatisticHome) => new { match, matchStatisticHome })
+                .Join(Context.MatchesStatistics, match => match.match.AwayStatisticsId, matchStatisticAway => matchStatisticAway.Id, (match, matchStatisticAway) => new { match, matchStatisticAway })
+                .Where(matches => matches.match.match.LeagueId == idLeague)
+                .Select(matches => new Match()
+                {
+                    Schedule = matches.match.match.Schedule,
+                    HomeStatistics = new MatchStatistics() { GoalsFullTime = matches.match.matchStatisticHome.GoalsFullTime, ResultFullTime = matches.match.matchStatisticHome.ResultFullTime },
+                    AwayStatistics = new MatchStatistics() { GoalsFullTime = matches.matchStatisticAway.GoalsFullTime, ResultFullTime = matches.matchStatisticAway.ResultFullTime },
+                    HomeTeamId = matches.match.match.HomeTeamId,
+                    AwayTeamId = matches.match.match.AwayTeamId,
+                }).ToList();
+
+
         }
         #endregion
 
@@ -146,6 +172,68 @@ namespace LEA.WebApi.Dal.Repositories
         }
         #endregion
 
+        #region Half_Time_Goals
+        public List<short> GetMadeGoalsHalfTimeHome(int hometeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.HomeStatisticsId,
+                                                        matchStatisticHome => matchStatisticHome.Id,
+                                                        (match, matchStatisticHome) => new
+                                                        { match, matchStatisticHome })
+                                        .Where(homeTeam => homeTeam.match.HomeTeamId == hometeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticHome.GoalsHalfTime)
+                                        .ToList();
+
+        }
+
+        public List<short> GetMadeGoalsHalfTimeAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.AwayStatisticsId,
+                                                        matchStatisticAway => matchStatisticAway.Id,
+                                                        (match, matchStatisticAway) => new
+                                                        { match, matchStatisticAway })
+                                        .Where(awayTeam => awayTeam.match.AwayTeamId == awayTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(awayStatistics => awayStatistics.matchStatisticAway.GoalsHalfTime)
+                                        .ToList();
+
+        }
+
+        public List<short> GetTakenGoalsHalfTimeHome(int homeTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.AwayStatisticsId,
+                                                        matchStatisticAway => matchStatisticAway.Id,
+                                                        (match, matchStatisticAway) => new
+                                                        { match, matchStatisticAway })
+                                        .Where(homeTeam => homeTeam.match.HomeTeamId == homeTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticAway.GoalsHalfTime)
+                                        .ToList();
+
+        }
+
+        public List<short> GetTakenGoalsHalfTimeAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.HomeStatisticsId,
+                                                        matchStatisticHome => matchStatisticHome.Id,
+                                                        (match, matchStatisticHome) => new
+                                                        { match, matchStatisticHome })
+                                        .Where(homeTeam => homeTeam.match.AwayTeamId == awayTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticHome.GoalsHalfTime)
+                                        .ToList();
+
+        }
+        #endregion
+
         #region Corner_Full_Time_region
         public List<short> GetMadeCornersFullTimeHome(int hometeamId, int amountGame)
         {
@@ -206,7 +294,9 @@ namespace LEA.WebApi.Dal.Repositories
                                         .ToList();
 
         }
+
         #endregion
+
 
     }
 }

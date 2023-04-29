@@ -4,14 +4,16 @@ using LEA.WebApi.Dal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace LEA.WebApi.Dal.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20230422032646_AddLeagueInMatchOnUpdate")]
+    partial class AddLeagueInMatchOnUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,7 +34,7 @@ namespace LEA.WebApi.Dal.Migrations
                     b.Property<DateTime>("Creation")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2023, 4, 22, 1, 58, 33, 48, DateTimeKind.Local).AddTicks(1701));
+                        .HasDefaultValue(new DateTime(2023, 4, 22, 0, 26, 45, 718, DateTimeKind.Local).AddTicks(4211));
 
                     b.Property<short>("Division")
                         .HasColumnType("smallint");
@@ -66,7 +68,7 @@ namespace LEA.WebApi.Dal.Migrations
                     b.Property<DateTime>("Creation")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2023, 4, 22, 1, 58, 33, 53, DateTimeKind.Local).AddTicks(7592));
+                        .HasDefaultValue(new DateTime(2023, 4, 22, 0, 26, 45, 725, DateTimeKind.Local).AddTicks(762));
 
                     b.Property<int>("HomeStatisticsId")
                         .HasColumnType("int");
@@ -95,7 +97,8 @@ namespace LEA.WebApi.Dal.Migrations
 
                     b.HasIndex("HomeTeamId");
 
-                    b.HasIndex("LeagueId");
+                    b.HasIndex("LeagueId")
+                        .IsUnique();
 
                     b.HasIndex("RefereeId");
 
@@ -115,7 +118,7 @@ namespace LEA.WebApi.Dal.Migrations
                     b.Property<DateTime>("Creation")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2023, 4, 22, 1, 58, 33, 53, DateTimeKind.Local).AddTicks(8243));
+                        .HasDefaultValue(new DateTime(2023, 4, 22, 0, 26, 45, 725, DateTimeKind.Local).AddTicks(1338));
 
                     b.Property<short>("FoulsCommitted")
                         .HasColumnType("smallint");
@@ -159,7 +162,7 @@ namespace LEA.WebApi.Dal.Migrations
                     b.Property<DateTime>("Creation")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2023, 4, 22, 1, 58, 33, 53, DateTimeKind.Local).AddTicks(8456));
+                        .HasDefaultValue(new DateTime(2023, 4, 22, 0, 26, 45, 725, DateTimeKind.Local).AddTicks(1537));
 
                     b.Property<string>("Name")
                         .HasMaxLength(150)
@@ -180,7 +183,7 @@ namespace LEA.WebApi.Dal.Migrations
                     b.Property<DateTime>("Creation")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2023, 4, 22, 1, 58, 33, 53, DateTimeKind.Local).AddTicks(8702));
+                        .HasDefaultValue(new DateTime(2023, 4, 22, 0, 26, 45, 725, DateTimeKind.Local).AddTicks(1763));
 
                     b.Property<int>("LeagueId")
                         .HasColumnType("int");
@@ -231,9 +234,10 @@ namespace LEA.WebApi.Dal.Migrations
                         .IsRequired();
 
                     b.HasOne("LEA.WebApi.Domain.Models.League", "League")
-                        .WithMany("Matches")
-                        .HasForeignKey("LeagueId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .WithOne()
+                        .HasForeignKey("LEA.WebApi.Domain.Models.Match", "LeagueId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("LEA.WebApi.Domain.Models.Referee", "Referee")
                         .WithMany("Matches")
@@ -266,8 +270,6 @@ namespace LEA.WebApi.Dal.Migrations
 
             modelBuilder.Entity("LEA.WebApi.Domain.Models.League", b =>
                 {
-                    b.Navigation("Matches");
-
                     b.Navigation("Teams");
                 });
 

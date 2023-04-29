@@ -73,9 +73,9 @@ namespace LEA.WebApi.Service.Services
                     MatchStatistics homeMatchStatistics = HomeMatchStatisticsLoad(fields, league.Coutry);
                     MatchStatistics awayMatchStatistics = AwayMatchStatisticsLoad(fields, league.Coutry);
                     if (league.Coutry == Country.England)
-                        MatchLoad(schedule, referee, homeTeam, awayTeam, homeMatchStatistics, awayMatchStatistics);
+                        MatchLoad(schedule, referee, homeTeam, awayTeam, league, homeMatchStatistics, awayMatchStatistics);
                     else
-                        MatchLoad(schedule, null, homeTeam, awayTeam, homeMatchStatistics, awayMatchStatistics);
+                        MatchLoad(schedule, null, homeTeam, awayTeam, league, homeMatchStatistics, awayMatchStatistics);
                     saved = true;
                 }
                 updateMatchesReportViewModel.Add(
@@ -90,11 +90,11 @@ namespace LEA.WebApi.Service.Services
                         Saved = saved
                     });
             }
-            
+
             return updateMatchesReportViewModel;
         }
         #region method record
-        private void MatchLoad(DateTime schedule, Referee referee, Team homeTeam, Team awayTeam, MatchStatistics homeMatchStatistics, MatchStatistics awayMatchStatistics)
+        private void MatchLoad(DateTime schedule, Referee referee, Team homeTeam, Team awayTeam, League league, MatchStatistics homeMatchStatistics, MatchStatistics awayMatchStatistics)
         {
             Match match = new()
             {
@@ -103,7 +103,9 @@ namespace LEA.WebApi.Service.Services
                 AwayTeamId = awayTeam.Id,
                 HomeStatisticsId = homeMatchStatistics.Id,
                 AwayStatisticsId = awayMatchStatistics.Id,
-                RefereeId = referee?.Id
+                LeagueId = league.Id,
+                RefereeId = referee?.Id,
+                Creation = DateTime.Now
             };
             MatchRepository.Save(match);
         }
@@ -121,7 +123,9 @@ namespace LEA.WebApi.Service.Services
                 Corners = ParseShort(fields[19 - setupCellUpload]),
                 FoulsCommitted = ParseShort(fields[17 - setupCellUpload]),
                 Yellow = ParseShort(fields[21 - setupCellUpload]),
-                Red = ParseShort(fields[23 - setupCellUpload])
+                Red = ParseShort(fields[23 - setupCellUpload]),
+                Creation = DateTime.Now
+                
 
             };
             MatchStatisticsRepository.Create(awayMatchStatistics);
@@ -141,7 +145,8 @@ namespace LEA.WebApi.Service.Services
                 Corners = ParseShort(fields[18 - setupCellUpload]),
                 FoulsCommitted = ParseShort(fields[16 - setupCellUpload]),
                 Yellow = ParseShort(fields[20 - setupCellUpload]),
-                Red = ParseShort(fields[22 - setupCellUpload])
+                Red = ParseShort(fields[22 - setupCellUpload]),
+                Creation = DateTime.Now
             };
             MatchStatisticsRepository.Create(homeMatchStatistics);
             return homeMatchStatistics;
@@ -154,7 +159,8 @@ namespace LEA.WebApi.Service.Services
                 awayTeam = new()
                 {
                     Name = fields[4],
-                    LeagueId = league.Id
+                    LeagueId = league.Id,
+                    Creation = DateTime.Now
                 };
                 TeamRepository.Save(awayTeam);
             }
@@ -169,7 +175,8 @@ namespace LEA.WebApi.Service.Services
                 homeTeam = new()
                 {
                     Name = fields[3],
-                    LeagueId = league.Id
+                    LeagueId = league.Id,
+                    Creation = DateTime.Now
                 };
 
                 TeamRepository.Save(homeTeam);
@@ -186,7 +193,8 @@ namespace LEA.WebApi.Service.Services
                 {
                     Division = FindDivision(fields[0]),
                     Coutry = FindCountry(fields[0]),
-                    Name = FindLeagueName(fields[0])
+                    Name = FindLeagueName(fields[0]),
+                    Creation = DateTime.Now
                 };
                 LeagueRepository.Save(league);
             }
@@ -200,7 +208,8 @@ namespace LEA.WebApi.Service.Services
             {
                 referee = new()
                 {
-                    Name = fields[11]
+                    Name = fields[11],
+                    Creation = DateTime.Now
                 };
 
                 RefereeRepository.Save(referee);
