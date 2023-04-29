@@ -67,5 +67,33 @@ namespace LEA.WebApi.Web.Controllers
         {
             return StatusCode(200, AnalysisService.MatchCornersFullTime(homeTeamId, awayTeamId, matchCount));
         }
+
+        [HttpGet]
+        [Route("MatchYellowFullTime")]
+        public IActionResult MatchYellowFullTime(int homeTeamId, int awayTeamId, int matchCount)
+        {
+            return StatusCode(200, AnalysisService.MatchYellowFullTime (homeTeamId, awayTeamId, matchCount));
+        }
+
+        [HttpGet]
+        [Route("MatchRedFullTime")]
+        public IActionResult MatchRedFullTime(int homeTeamId, int awayTeamId, int matchCount)
+        {
+            return StatusCode(200, AnalysisService.MatchRedFullTime(homeTeamId, awayTeamId, matchCount));
+        }
+
+        [HttpGet]
+        [Route("MatchShostsFullTime")]
+        public IActionResult MatchShotsFullTime(int homeTeamId, int awayTeamId, int matchCount)
+        {
+            return StatusCode(200, AnalysisService.MatchShotsFullTime(homeTeamId, awayTeamId, matchCount));
+        }
+
+        [HttpGet]
+        [Route("MatchShotsOnTargetFullTime")]
+        public IActionResult MatchShotsOnTargetFullTime(int homeTeamId, int awayTeamId, int matchCount)
+        {
+            return StatusCode(200, AnalysisService.MatchShotsOnTargetFullTime(homeTeamId, awayTeamId, matchCount));
+        }
     }
 }

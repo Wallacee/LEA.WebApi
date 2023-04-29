@@ -1,7 +1,4 @@
 ﻿using LEA.WebApi.Service.ViewModel;
-using System.Collections.Generic;
-using System;
-using LEA.WebApi.Domain.Models;
 
 namespace LEA.WebApi.Service.Interfaces
 {
@@ -14,6 +11,10 @@ namespace LEA.WebApi.Service.Interfaces
         AnalysisViewModel MatchGoalsFullTime(int homeTeamId, int awayTeamId, int matchCount);
         AnalysisViewModel MatchCornersFullTime(int homeTeamId, int awayTeamId, int matchCount);
         AnalysisViewModel MatchGoalsHalfTime(int homeTeamId, int awayTeamId, int matchCount);
+        AnalysisViewModel MatchYellowFullTime(int homeTeamId, int awayTeamId, int matchCount);
+        AnalysisViewModel MatchRedFullTime(int homeTeamId, int awayTeamId, int matchCount);
+        AnalysisViewModel MatchShotsFullTime(int homeTeamId, int awayTeamId, int matchCount);
+        AnalysisViewModel MatchShotsOnTargetFullTime(int homeTeamId, int awayTeamId, int matchCount);
 
 
 

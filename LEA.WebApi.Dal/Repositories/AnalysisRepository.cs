@@ -297,6 +297,257 @@ namespace LEA.WebApi.Dal.Repositories
 
         #endregion
 
+        #region Yellow_Full_Time_region
+        public List<short> GetMadeYellowFullTimeHome(int hometeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.HomeStatisticsId,
+                                                        matchStatisticHome => matchStatisticHome.Id,
+                                                        (match, matchStatisticHome) => new
+                                                        { match, matchStatisticHome })
+                                        .Where(homeTeam => homeTeam.match.HomeTeamId == hometeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticHome.Yellow)
+                                        .ToList();
+
+        }
+
+        public List<short> GetMadeYellowFullTimeAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.AwayStatisticsId,
+                                                        matchStatisticAway => matchStatisticAway.Id,
+                                                        (match, matchStatisticAway) => new
+                                                        { match, matchStatisticAway })
+                                        .Where(awayTeam => awayTeam.match.AwayTeamId == awayTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(awayStatistics => awayStatistics.matchStatisticAway.Yellow)
+                                        .ToList();
+
+        }
+
+        public List<short> GetTakenYellowFullTimeHome(int homeTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.AwayStatisticsId,
+                                                        matchStatisticAway => matchStatisticAway.Id,
+                                                        (match, matchStatisticAway) => new
+                                                        { match, matchStatisticAway })
+                                        .Where(homeTeam => homeTeam.match.HomeTeamId == homeTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticAway.Yellow)
+                                        .ToList();
+
+        }
+
+        public List<short> GetTakenYellowFullTimeAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.HomeStatisticsId,
+                                                        matchStatisticHome => matchStatisticHome.Id,
+                                                        (match, matchStatisticHome) => new
+                                                        { match, matchStatisticHome })
+                                        .Where(homeTeam => homeTeam.match.AwayTeamId == awayTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticHome.Yellow)
+                                        .ToList();
+
+        }
+
+        #endregion
+
+        #region Red_Full_Time_region
+        public List<short> GetMadeRedFullTimeHome(int hometeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.HomeStatisticsId,
+                                                        matchStatisticHome => matchStatisticHome.Id,
+                                                        (match, matchStatisticHome) => new
+                                                        { match, matchStatisticHome })
+                                        .Where(homeTeam => homeTeam.match.HomeTeamId == hometeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticHome.Red)
+                                        .ToList();
+
+        }
+
+        public List<short> GetMadeRedFullTimeAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.AwayStatisticsId,
+                                                        matchStatisticAway => matchStatisticAway.Id,
+                                                        (match, matchStatisticAway) => new
+                                                        { match, matchStatisticAway })
+                                        .Where(awayTeam => awayTeam.match.AwayTeamId == awayTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(awayStatistics => awayStatistics.matchStatisticAway.Red)
+                                        .ToList();
+
+        }
+
+        public List<short> GetTakenRedFullTimeHome(int homeTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.AwayStatisticsId,
+                                                        matchStatisticAway => matchStatisticAway.Id,
+                                                        (match, matchStatisticAway) => new
+                                                        { match, matchStatisticAway })
+                                        .Where(homeTeam => homeTeam.match.HomeTeamId == homeTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticAway.Red)
+                                        .ToList();
+
+        }
+
+        public List<short> GetTakenRedFullTimeAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.HomeStatisticsId,
+                                                        matchStatisticHome => matchStatisticHome.Id,
+                                                        (match, matchStatisticHome) => new
+                                                        { match, matchStatisticHome })
+                                        .Where(homeTeam => homeTeam.match.AwayTeamId == awayTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticHome.Red)
+                                        .ToList();
+
+        }
+
+        #endregion
+
+        #region Shots_Full_Time_region
+        public List<short> GetMadeShotsFullTimeHome(int hometeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.HomeStatisticsId,
+                                                        matchStatisticHome => matchStatisticHome.Id,
+                                                        (match, matchStatisticHome) => new
+                                                        { match, matchStatisticHome })
+                                        .Where(homeTeam => homeTeam.match.HomeTeamId == hometeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticHome.Shots)
+                                        .ToList();
+
+        }
+
+        public List<short> GetMadeShotsFullTimeAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.AwayStatisticsId,
+                                                        matchStatisticAway => matchStatisticAway.Id,
+                                                        (match, matchStatisticAway) => new
+                                                        { match, matchStatisticAway })
+                                        .Where(awayTeam => awayTeam.match.AwayTeamId == awayTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(awayStatistics => awayStatistics.matchStatisticAway.Shots)
+                                        .ToList();
+
+        }
+
+        public List<short> GetTakenShotsFullTimeHome(int homeTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.AwayStatisticsId,
+                                                        matchStatisticAway => matchStatisticAway.Id,
+                                                        (match, matchStatisticAway) => new
+                                                        { match, matchStatisticAway })
+                                        .Where(homeTeam => homeTeam.match.HomeTeamId == homeTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticAway.Shots)
+                                        .ToList();
+
+        }
+
+        public List<short> GetTakenShotsFullTimeAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.HomeStatisticsId,
+                                                        matchStatisticHome => matchStatisticHome.Id,
+                                                        (match, matchStatisticHome) => new
+                                                        { match, matchStatisticHome })
+                                        .Where(homeTeam => homeTeam.match.AwayTeamId == awayTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticHome.Shots)
+                                        .ToList();
+
+        }
+
+        #endregion
+
+        #region ShotsOnTarget_Full_Time_region
+        public List<short> GetMadeShotsOnTargetFullTimeHome(int hometeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.HomeStatisticsId,
+                                                        matchStatisticHome => matchStatisticHome.Id,
+                                                        (match, matchStatisticHome) => new
+                                                        { match, matchStatisticHome })
+                                        .Where(homeTeam => homeTeam.match.HomeTeamId == hometeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticHome.ShotsOnTarget)
+                                        .ToList();
+
+        }
+
+        public List<short> GetMadeShotsOnTargetFullTimeAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.AwayStatisticsId,
+                                                        matchStatisticAway => matchStatisticAway.Id,
+                                                        (match, matchStatisticAway) => new
+                                                        { match, matchStatisticAway })
+                                        .Where(awayTeam => awayTeam.match.AwayTeamId == awayTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(awayStatistics => awayStatistics.matchStatisticAway.ShotsOnTarget)
+                                        .ToList();
+
+        }
+
+        public List<short> GetTakenShotsOnTargetFullTimeHome(int homeTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.AwayStatisticsId,
+                                                        matchStatisticAway => matchStatisticAway.Id,
+                                                        (match, matchStatisticAway) => new
+                                                        { match, matchStatisticAway })
+                                        .Where(homeTeam => homeTeam.match.HomeTeamId == homeTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticAway.ShotsOnTarget)
+                                        .ToList();
+
+        }
+
+        public List<short> GetTakenShotsOnTargetFullTimeAway(int awayTeamId, int amountGame)
+        {
+            return Context.Matches.Join(Context.MatchesStatistics,
+                                                        match => match.HomeStatisticsId,
+                                                        matchStatisticHome => matchStatisticHome.Id,
+                                                        (match, matchStatisticHome) => new
+                                                        { match, matchStatisticHome })
+                                        .Where(homeTeam => homeTeam.match.AwayTeamId == awayTeamId)
+                                        .Take(amountGame)
+                                        .OrderByDescending(_match => _match.match.Id)
+                                        .Select(homeStatistics => homeStatistics.matchStatisticHome.ShotsOnTarget)
+                                        .ToList();
+
+        }
+
+        #endregion
 
     }
 }

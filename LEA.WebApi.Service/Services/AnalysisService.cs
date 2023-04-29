@@ -71,7 +71,67 @@ namespace LEA.WebApi.Service.Services
                 PositionAgainstAway = positionAgainstAway
             };
         }
+       
+        public List<TableLeagueViewModel> MakeLeagueTable(DateTime schedule, List<Match> seasonMatches)
+        {
+            List<Match> validMatches = seasonMatches.Where(s => s.Schedule <= schedule).ToList();
+            List<TableLeagueViewModel> tableLeagueViewModel = new();
+            foreach (var match in validMatches)
+            {
+                if (!tableLeagueViewModel.Any(t => t.IdTeam == match.HomeTeamId))
+                {
+                    tableLeagueViewModel.Add(new TableLeagueViewModel()
+                    {
+                        IdTeam = match.HomeTeamId,
+                        Points = GetPointsValue(match.HomeStatistics),
+                        GoalsPro = match.HomeStatistics.GoalsFullTime,
+                        GoalDifference = match.HomeStatistics.GoalsFullTime - match.AwayStatistics.GoalsFullTime
+                    });
+                }
+                else
+                {
+                    TableLeagueViewModel teamTable = tableLeagueViewModel.Where(t => t.IdTeam == match.HomeTeamId).FirstOrDefault();
 
+                    teamTable.Points += GetPointsValue(match.HomeStatistics);
+                    teamTable.GoalsPro += match.HomeStatistics.GoalsFullTime;
+                    teamTable.GoalDifference += match.HomeStatistics.GoalsFullTime - match.AwayStatistics.GoalsFullTime;
+                }
+
+                if (!tableLeagueViewModel.Any(t => t.IdTeam == match.AwayTeamId))
+                {
+                    tableLeagueViewModel.Add(new TableLeagueViewModel()
+                    {
+                        IdTeam = match.AwayTeamId,
+                        Points = GetPointsValue(match.AwayStatistics),
+                        GoalsPro = match.AwayStatistics.GoalsFullTime,
+                        GoalDifference = match.AwayStatistics.GoalsFullTime - match.HomeStatistics.GoalsFullTime
+                    });
+                }
+                else
+                {
+                    TableLeagueViewModel teamTable = tableLeagueViewModel.Where(t => t.IdTeam == match.AwayTeamId).FirstOrDefault();
+
+                    teamTable.Points += GetPointsValue(match.AwayStatistics);
+                    teamTable.GoalsPro += match.AwayStatistics.GoalsFullTime;
+                    teamTable.GoalDifference += match.AwayStatistics.GoalsFullTime - match.HomeStatistics.GoalsFullTime;
+                }
+
+            }
+
+            return tableLeagueViewModel.OrderByDescending(t => t.Points).ThenByDescending(t => t.GoalDifference).ThenByDescending(t => t.GoalsPro).ToList();
+
+        }
+
+        public short GetPossibleMatchAmount(int homeTeamId, int awayTeamId)
+        {
+            short homeAmount = AnalysisRepository.GetHomeAmountTeamMatch(homeTeamId);
+            short awayAmount = AnalysisRepository.GetAwayAmountTeamMatch(awayTeamId);
+            if (homeAmount == awayAmount)
+                return homeAmount;
+
+            return homeAmount > awayAmount ? awayAmount : homeAmount;
+        }
+        
         public LeaguesViewModel Leagues()
         {
 
@@ -142,66 +202,57 @@ namespace LEA.WebApi.Service.Services
             };
         }
 
-        public short GetPossibleMatchAmount(int homeTeamId, int awayTeamId)
+        public AnalysisViewModel MatchYellowFullTime(int homeTeamId, int awayTeamId, int matchCount)
         {
-            short homeAmount = AnalysisRepository.GetHomeAmountTeamMatch(homeTeamId);
-            short awayAmount = AnalysisRepository.GetAwayAmountTeamMatch(awayTeamId);
-            if (homeAmount == awayAmount)
-                return homeAmount;
-
-            return homeAmount > awayAmount ? awayAmount : homeAmount;
-        }
-
-
-        public List<TableLeagueViewModel> MakeLeagueTable(DateTime schedule, List<Match> seasonMatches)
-        {
-            List<Match> validMatches = seasonMatches.Where(s => s.Schedule <= schedule).ToList();
-            List<TableLeagueViewModel> tableLeagueViewModel = new();
-            foreach (var match in validMatches)
+            return new AnalysisViewModel()
             {
-                if (!tableLeagueViewModel.Any(t => t.IdTeam == match.HomeTeamId))
-                {
-                    tableLeagueViewModel.Add(new TableLeagueViewModel()
-                    {
-                        IdTeam = match.HomeTeamId,
-                        Points = GetPointsValue(match.HomeStatistics),
-                        GoalsPro = match.HomeStatistics.GoalsFullTime,
-                        GoalDifference = match.HomeStatistics.GoalsFullTime - match.AwayStatistics.GoalsFullTime
-                    });
-                }
-                else
-                {
-                    TableLeagueViewModel teamTable = tableLeagueViewModel.Where(t => t.IdTeam == match.HomeTeamId).FirstOrDefault();
-
-                    teamTable.Points += GetPointsValue(match.HomeStatistics);
-                    teamTable.GoalsPro += match.HomeStatistics.GoalsFullTime;
-                    teamTable.GoalDifference += match.HomeStatistics.GoalsFullTime - match.AwayStatistics.GoalsFullTime;
-                }
-
-                if (!tableLeagueViewModel.Any(t => t.IdTeam == match.AwayTeamId))
-                {
-                    tableLeagueViewModel.Add(new TableLeagueViewModel()
-                    {
-                        IdTeam = match.AwayTeamId,
-                        Points = GetPointsValue(match.AwayStatistics),
-                        GoalsPro = match.AwayStatistics.GoalsFullTime,
-                        GoalDifference = match.AwayStatistics.GoalsFullTime - match.HomeStatistics.GoalsFullTime
-                    });
-                }
-                else
-                {
-                    TableLeagueViewModel teamTable = tableLeagueViewModel.Where(t => t.IdTeam == match.AwayTeamId).FirstOrDefault();
-
-                    teamTable.Points += GetPointsValue(match.AwayStatistics);
-                    teamTable.GoalsPro += match.AwayStatistics.GoalsFullTime;
-                    teamTable.GoalDifference += match.AwayStatistics.GoalsFullTime - match.HomeStatistics.GoalsFullTime;
-                }
-
-            }
-
-            return tableLeagueViewModel.OrderByDescending(t => t.Points).ThenByDescending(t => t.GoalDifference).ThenByDescending(t => t.GoalsPro).ToList();
-
+                MadeByHome = AnalysisRepository.GetMadeYellowFullTimeHome(homeTeamId, matchCount),
+                TakenByHome = analysisRepository.GetTakenYellowFullTimeHome(homeTeamId, matchCount),
+                MadeByAway = AnalysisRepository.GetMadeYellowFullTimeAway(awayTeamId, matchCount),
+                TakenByAway = analysisRepository.GetTakenYellowFullTimeAway(awayTeamId, matchCount),
+                StatisticKind = Domain.Enuns.StatisticKind.Yellow
+            };
         }
+
+        public AnalysisViewModel MatchRedFullTime(int homeTeamId, int awayTeamId, int matchCount)
+        {
+            return new AnalysisViewModel()
+            {
+                MadeByHome = AnalysisRepository.GetMadeRedFullTimeHome(homeTeamId, matchCount),
+                TakenByHome = analysisRepository.GetTakenRedFullTimeHome(homeTeamId, matchCount),
+                MadeByAway = AnalysisRepository.GetMadeRedFullTimeAway(awayTeamId, matchCount),
+                TakenByAway = analysisRepository.GetTakenRedFullTimeAway(awayTeamId, matchCount),
+                StatisticKind = Domain.Enuns.StatisticKind.Red
+            };
+        }
+
+        public AnalysisViewModel MatchShotsFullTime(int homeTeamId, int awayTeamId, int matchCount)
+        {
+            return new AnalysisViewModel()
+            {
+                MadeByHome = AnalysisRepository.GetMadeShotsFullTimeHome(homeTeamId, matchCount),
+                TakenByHome = analysisRepository.GetTakenShotsFullTimeHome(homeTeamId, matchCount),
+                MadeByAway = AnalysisRepository.GetMadeShotsFullTimeAway(awayTeamId, matchCount),
+                TakenByAway = analysisRepository.GetTakenShotsFullTimeAway(awayTeamId, matchCount),
+                StatisticKind = Domain.Enuns.StatisticKind.Shots
+            };
+        }
+
+        public AnalysisViewModel MatchShotsOnTargetFullTime(int homeTeamId, int awayTeamId, int matchCount)
+        {
+            return new AnalysisViewModel()
+            {
+                MadeByHome = AnalysisRepository.GetMadeShotsOnTargetFullTimeHome(homeTeamId, matchCount),
+                TakenByHome = analysisRepository.GetTakenShotsOnTargetFullTimeHome(homeTeamId, matchCount),
+                MadeByAway = AnalysisRepository.GetMadeShotsOnTargetFullTimeAway(awayTeamId, matchCount),
+                TakenByAway = analysisRepository.GetTakenShotsOnTargetFullTimeAway(awayTeamId, matchCount),
+                StatisticKind = Domain.Enuns.StatisticKind.ShotsOnTarget
+            };
+        }
+
+
+
+
 
         private int GetPointsValue(MatchStatistics matchStatistics)
         {
@@ -211,10 +262,6 @@ namespace LEA.WebApi.Service.Services
             return matchStatistics.ResultFullTime == Domain.Enuns.Scoreboard.Win ? 3 : 0;
         }
 
-        //public List<Match> GetAllMatchesBySchedule(DateTime dateTime, int idLegue)
-        //{
-
-        //}
-
+        
     }
 }
