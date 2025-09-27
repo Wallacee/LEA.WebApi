@@ -1,4 +1,5 @@
 ﻿using LEA.WebApi.Domain.Models;
+using LEA.WebApi.Infra.Models;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +16,11 @@ namespace LEA.WebApi.Domain.Interfaces
         
         public List<League> GetAllLeagues();
         public List<Team> GetAllLeagueTeams(int idLeague);
-        
+
+        List<EstatisticasPartida> GetAllStats(int teamId, int amountGame, bool isHome);
+        MediasCampeonato GetChampionshipAverage(bool isHome);
+        MediasCampeonato GetChampionshipAverage();
+
         short GetHomeAmountTeamMatch(int idHomeTeam);
         short GetAwayAmountTeamMatch(int idAwayTeam);
 
@@ -53,6 +58,11 @@ namespace LEA.WebApi.Domain.Interfaces
         List<short> GetMadeShotsOnTargetFullTimeAway(int awayTeamId, int amountGame);
         List<short> GetTakenShotsOnTargetFullTimeHome(int homeTeamId, int amountGame);
         List<short> GetTakenShotsOnTargetFullTimeAway(int awayTeamId, int amountGame);
+
+        List<short> GetTakenFoulsFullTimeAway(int awayTeamId, int amountGame);
+        List<short> GetTakenFoulsFullTimeHome(int homeTeamId, int amountGame);
+        List<short> GetMadeFoulsFullTimeAway(int awayTeamId, int amountGame);
+        List<short> GetMadeFoulsFullTimeHome(int hometeamId, int amountGame);
 
     }
 }

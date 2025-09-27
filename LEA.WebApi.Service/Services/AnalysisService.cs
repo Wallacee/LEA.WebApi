@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using LEA.WebApi.Domain.Models;
+using LEA.WebApi.Infra;
+using LEA.WebApi.Infra.Models;
+using LEA.WebApi.Infra.Interfaces;
 
 namespace LEA.WebApi.Service.Services
 {
@@ -13,14 +16,17 @@ namespace LEA.WebApi.Service.Services
         #region database_access_region
 
         private readonly IAnalysisRepository analysisRepository;
+        private readonly IPreditorFutebolAvancado preditorFutebolAvancado;
 
         public IAnalysisRepository AnalysisRepository => analysisRepository;
+        public IPreditorFutebolAvancado PreditorFutebolAvancado => preditorFutebolAvancado;
 
         #endregion
 
-        public AnalysisService(IAnalysisRepository analysisRepository)
+        public AnalysisService(IAnalysisRepository analysisRepository, IPreditorFutebolAvancado preditorFutebolAvancado)
         {
             this.analysisRepository = analysisRepository;
+            this.preditorFutebolAvancado = preditorFutebolAvancado;
         }
 
         public GeneralDataViewModel GeneralMatchData(int homeTeamId, int awayTeamId, int matchCount)
@@ -71,7 +77,7 @@ namespace LEA.WebApi.Service.Services
                 PositionAgainstAway = positionAgainstAway
             };
         }
-       
+
         public List<TableLeagueViewModel> MakeLeagueTable(DateTime schedule, List<Match> seasonMatches)
         {
             List<Match> validMatches = seasonMatches.Where(s => s.Schedule <= schedule).ToList();
@@ -131,7 +137,7 @@ namespace LEA.WebApi.Service.Services
 
             return homeAmount > awayAmount ? awayAmount : homeAmount;
         }
-        
+
         public LeaguesViewModel Leagues()
         {
 
@@ -164,6 +170,22 @@ namespace LEA.WebApi.Service.Services
                                           .OrderBy(team => team.Name)
                                           .ToList()
             };
+        }
+
+        public List<ResultadoPrevisao> MatchFullStatsPreditor(DadosPrevisaoPartidaViewModel dadosPrevisaoPartidaViewModel)
+        {
+            Time timeHome = new()
+            {
+                Nome = dadosPrevisaoPartidaViewModel.HomeTeamName,
+                UltimosJogosCasa = AnalysisRepository.GetAllStats(dadosPrevisaoPartidaViewModel.HomeTeamId, dadosPrevisaoPartidaViewModel.MatchCount, true)
+            };
+            Time timeAway = new()
+            {
+                Nome = dadosPrevisaoPartidaViewModel.AwayTeamName,
+                UltimosJogosFora = AnalysisRepository.GetAllStats(dadosPrevisaoPartidaViewModel.AwayTeamId, dadosPrevisaoPartidaViewModel.MatchCount, false)
+            };
+            PreditorFutebolAvancado.CalcularMedias(analysisRepository.GetChampionshipAverage(true), analysisRepository.GetChampionshipAverage(false), analysisRepository.GetChampionshipAverage());
+            return PreditorFutebolAvancado.PreverTodasEstatisticas(timeHome, timeAway,dadosPrevisaoPartidaViewModel.MatchCount);
         }
 
         public AnalysisViewModel MatchGoalsFullTime(int homeTeamId, int awayTeamId, int matchCount)
@@ -250,10 +272,6 @@ namespace LEA.WebApi.Service.Services
             };
         }
 
-
-
-
-
         private int GetPointsValue(MatchStatistics matchStatistics)
         {
             if (matchStatistics.ResultFullTime == Domain.Enuns.Scoreboard.Draw)
@@ -262,6 +280,6 @@ namespace LEA.WebApi.Service.Services
             return matchStatistics.ResultFullTime == Domain.Enuns.Scoreboard.Win ? 3 : 0;
         }
 
-        
+
     }
 }

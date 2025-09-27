@@ -1,4 +1,7 @@
-﻿using LEA.WebApi.Service.ViewModel;
+﻿using LEA.WebApi.Infra;
+using LEA.WebApi.Infra.Models;
+using LEA.WebApi.Service.ViewModel;
+using System.Collections.Generic;
 
 namespace LEA.WebApi.Service.Interfaces
 {
@@ -15,9 +18,7 @@ namespace LEA.WebApi.Service.Interfaces
         AnalysisViewModel MatchRedFullTime(int homeTeamId, int awayTeamId, int matchCount);
         AnalysisViewModel MatchShotsFullTime(int homeTeamId, int awayTeamId, int matchCount);
         AnalysisViewModel MatchShotsOnTargetFullTime(int homeTeamId, int awayTeamId, int matchCount);
-
-
-
+        List<ResultadoPrevisao> MatchFullStatsPreditor(DadosPrevisaoPartidaViewModel dadosPrevisaoPartidaViewModel);
     }
 
 }

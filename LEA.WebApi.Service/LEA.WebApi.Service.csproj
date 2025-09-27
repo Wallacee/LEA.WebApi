@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LEA.WebApi.Domain\LEA.WebApi.Domain.csproj" />
+    <ProjectReference Include="..\LEA.WebApi.Infra\LEA.WebApi.Infra.csproj" />
   </ItemGroup>
 
 </Project>

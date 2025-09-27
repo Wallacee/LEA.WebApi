@@ -1,4 +1,5 @@
 ﻿using LEA.WebApi.Service.Interfaces;
+using LEA.WebApi.Service.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LEA.WebApi.Web.Controllers
@@ -95,5 +96,14 @@ namespace LEA.WebApi.Web.Controllers
         {
             return StatusCode(200, AnalysisService.MatchShotsOnTargetFullTime(homeTeamId, awayTeamId, matchCount));
         }
+
+        [HttpPost]
+        [Route("MatchFullStatsPreditor")]
+        public IActionResult MatchFullStatsPreditor(DadosPrevisaoPartidaViewModel dadosPrevisaoPartidaViewModel)
+        {
+            return StatusCode(200, AnalysisService.MatchFullStatsPreditor(dadosPrevisaoPartidaViewModel));
+        }
     }
+
+
 }
