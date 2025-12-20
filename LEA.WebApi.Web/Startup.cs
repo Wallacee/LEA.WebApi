@@ -37,17 +37,16 @@ namespace LEA.WebApi.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
+            
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LEA.WebApi.Web v1"));
-            }
+            
 
             app.UseCors(builder =>
             {
                 builder
-                   .WithOrigins("http://localhost:4200", "https://localhost:4200")
+                   .WithOrigins("http://localhost:4200", "https://localhost:4200", "http://localhost:666")
                    .SetIsOriginAllowedToAllowWildcardSubdomains()
                    .AllowAnyHeader()
                    .AllowCredentials()
@@ -56,7 +55,7 @@ namespace LEA.WebApi.Web
             }
 );
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 

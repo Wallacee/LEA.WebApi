@@ -61,5 +61,12 @@ namespace LEA.WebApi.Web.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("test")]
+        public IActionResult Test()
+        {
+            return Ok("API is working!");
+        }
+
     }
 }

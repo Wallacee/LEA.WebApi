@@ -5,13 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AutoMapper\**" />
     <Compile Remove="ViewModels\**" />
+    <EmbeddedResource Remove="AutoMapper\**" />
     <EmbeddedResource Remove="ViewModels\**" />
+    <None Remove="AutoMapper\**" />
     <None Remove="ViewModels\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="AutoMapper\" />
   </ItemGroup>
 
   <ItemGroup>
