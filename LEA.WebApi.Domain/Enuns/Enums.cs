@@ -17,7 +17,6 @@
         Lost = 2,
         Draw = 3
     }
-
     public enum StatisticKind
     {
         GoalsFullTime = 0,
@@ -28,5 +27,17 @@
         Fols=5,
         Yellow= 6,
         Red= 7
+    }
+    public enum PredictionSeal
+    {
+        IGNORAR = 0,
+        EVITAR = 1,
+        APOSTAR = 2
+    }
+    public enum MarketScope
+    {
+        Home = 1,
+        Away = 2,
+        Total = 3
     }
 }

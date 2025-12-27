@@ -1,5 +1,6 @@
 ﻿using LEA.WebApi.Domain.Interfaces;
 using LEA.WebApi.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace LEA.WebApi.Dal.Repositories
     public class AnalysisRepository : IAnalysisRepository
     {
         private readonly Context context;
-
+        private const double HalfLifeDays = 180.0;
         public Context Context => context;
 
         public AnalysisRepository(Context context)
@@ -30,7 +31,7 @@ namespace LEA.WebApi.Dal.Repositories
                 .Where(_match => _match.match.HomeTeamId == homeTeamId)
                 .Take(amountGame)
                 .OrderByDescending(_match => _match.match.Id)
-                .Select(team=>new Team() 
+                .Select(team => new Team()
                 {
                     Id = team.awayTeam.Id,
                     Name = team.awayTeam.Name,
@@ -549,5 +550,214 @@ namespace LEA.WebApi.Dal.Repositories
 
         #endregion
 
+        public LeagueAverages GetLeagueAverages(int leagueId, DateTime matchDate)
+        {
+            var matches = Context.Matches
+                .Where(m => m.LeagueId == leagueId && m.Schedule < matchDate);
+
+            return new LeagueAverages
+            {
+                Goals = matches.Average(m =>
+                    (double)m.HomeStatistics.GoalsFullTime +
+                    (double)m.AwayStatistics.GoalsFullTime),
+
+                Shots = matches.Average(m =>
+                    (double)m.HomeStatistics.Shots +
+                    (double)m.AwayStatistics.Shots),
+
+                ShotsOnTarget = matches.Average(m =>
+                    (double)m.HomeStatistics.ShotsOnTarget +
+                    (double)m.AwayStatistics.ShotsOnTarget),
+
+                Corners = matches.Average(m =>
+                    (double)m.HomeStatistics.Corners +
+                    (double)m.AwayStatistics.Corners),
+
+                Fouls = matches.Average(m =>
+                    (double)m.HomeStatistics.FoulsCommitted +
+                    (double)m.AwayStatistics.FoulsCommitted),
+
+                Yellow= matches.Average(m =>
+                    (double)m.HomeStatistics.Yellow +
+                    (double)m.AwayStatistics.Yellow),
+
+                Red= matches.Average(m =>
+                    (double)m.HomeStatistics.Red +
+                    (double)m.AwayStatistics.Red)
+            };
+        }
+
+        // =========================
+        // FORÇA DO TIME
+        // =========================
+        public TeamStrengthProfile GetTeamStrength(int teamId, int leagueId, DateTime matchDate)
+        {
+            var leagueAvg = GetLeagueAverages(leagueId, matchDate);
+
+            var homeMatches = Context.Matches
+                .Where(m => m.HomeTeamId == teamId && m.Schedule < matchDate);
+
+            var awayMatches = Context.Matches
+                .Where(m => m.AwayTeamId == teamId && m.Schedule < matchDate);
+
+            return new TeamStrengthProfile
+            {
+                Home = new Strength
+                {
+                    Attack = homeMatches.Average(m => m.HomeStatistics.GoalsFullTime)
+                             / (leagueAvg.Goals / 2),
+
+                    Defense = homeMatches.Average(m => m.AwayStatistics.GoalsFullTime)
+                              / (leagueAvg.Goals / 2)
+                },
+                Away = new Strength
+                {
+                    Attack = awayMatches.Average(m => m.AwayStatistics.GoalsFullTime)
+                             / (leagueAvg.Goals / 2),
+
+                    Defense = awayMatches.Average(m => m.HomeStatistics.GoalsFullTime)
+                              / (leagueAvg.Goals / 2)
+                }
+            };
+
+        }
+        public TeamProfile GetTeamProfile(
+          int teamId,
+          int leagueId,
+          DateTime matchDate,
+          bool isHome)
+        {
+            List<(MatchStatistics stats, MatchStatistics oppStats, double daysAgo)> data;
+
+            if (isHome)
+            {
+                data = Context.Matches
+                    .Where(m =>
+                        m.LeagueId == leagueId &&
+                        m.HomeTeamId == teamId &&
+                        m.Schedule < matchDate)
+                    .Select(m => new
+                    {
+                        Stats = m.HomeStatistics,
+                        OppStats = m.AwayStatistics,
+                        DaysAgo = (matchDate - m.Schedule).TotalDays
+                    })
+                    .AsEnumerable()
+                    .Select(x => (x.Stats, x.OppStats, x.DaysAgo))
+                    .ToList();
+            }
+            else
+            {
+                data = Context.Matches
+                    .Where(m =>
+                        m.LeagueId == leagueId &&
+                        m.AwayTeamId == teamId &&
+                        m.Schedule < matchDate)
+                    .Select(m => new
+                    {
+                        Stats = m.AwayStatistics,
+                        OppStats = m.HomeStatistics,
+                        DaysAgo = (matchDate - m.Schedule).TotalDays
+                    })
+                    .AsEnumerable()
+                    .Select(x => (x.Stats, x.OppStats, x.DaysAgo))
+                    .ToList();
+            }
+
+            if (!data.Any())
+                return new TeamProfile();
+
+            // -------------------------------
+            // Time-decay (ponderação temporal)
+            // -------------------------------
+            double Weight(double daysAgo) =>
+                Math.Exp(-daysAgo / 180.0);
+
+            double totalWeight = data.Sum(x => Weight(x.daysAgo));
+
+            double WAvg(Func<MatchStatistics, double> selector) =>
+                data.Sum(x => selector(x.stats) * Weight(x.daysAgo)) / totalWeight;
+
+            double WAvgOpp(Func<MatchStatistics, double> selector) =>
+                data.Sum(x => selector(x.oppStats) * Weight(x.daysAgo)) / totalWeight;
+
+            // -------------------------------
+            // MÉDIAS ABSOLUTAS DO TIME
+            // -------------------------------
+            double goalsFor = WAvg(s => s.GoalsFullTime);
+            double goalsAgainst = WAvgOpp(s => s.GoalsFullTime);
+
+            // -------------------------------
+            // MÉDIA DA LIGA (POR TIME)
+            // -------------------------------
+            double leagueAvgGoals =
+                data.Sum(x =>
+                    (x.stats.GoalsFullTime + x.oppStats.GoalsFullTime)
+                    * Weight(x.daysAgo)) / (2.0 * totalWeight);
+
+            leagueAvgGoals = Math.Max(leagueAvgGoals, 0.1);
+
+            return new TeamProfile
+            {
+                // FORÇAS RELATIVAS (≈ 0.6 – 1.6)
+                AttackStrength = goalsFor / leagueAvgGoals,
+                DefenseStrength = goalsAgainst / leagueAvgGoals,
+
+                // MÉDIAS ABSOLUTAS (usadas depois com modulação)
+                Shots = WAvg(s => s.Shots),
+                ShotsOnTarget = WAvg(s => s.ShotsOnTarget),
+                Corners = WAvg(s => s.Corners),
+                Fouls = WAvg(s => s.FoulsCommitted),
+                YellowCards = WAvg(s => s.Yellow),
+                RedCards = WAvg(s => s.Red)
+            };
+        }
+
+        public LeagueCalibration GetLeagueCalibration(
+    int leagueId,
+    DateTime matchDate)
+        {
+            var matches = Context.Matches
+                .Where(m =>
+                    m.LeagueId == leagueId &&
+                    m.Schedule < matchDate)
+                .Select(m => new
+                {
+                    Home = m.HomeStatistics,
+                    Away = m.AwayStatistics,
+                    DaysAgo = (matchDate - m.Schedule).TotalDays
+                })
+                .AsEnumerable()
+                .ToList();
+
+            if (!matches.Any())
+                return new LeagueCalibration();
+
+            double Weight(double daysAgo) =>
+                Math.Exp(-daysAgo / 180.0);
+
+            double totalWeight = matches.Sum(x => Weight(x.DaysAgo));
+
+            double Avg(Func<MatchStatistics, double> selector) =>
+                matches.Sum(x =>
+                    (selector(x.Home) + selector(x.Away)) *
+                    Weight(x.DaysAgo)
+                ) / (2.0 * totalWeight);
+
+            return new LeagueCalibration
+            {
+                Goals = Avg(s => s.GoalsFullTime),
+                Shots = Avg(s => s.Shots),
+                ShotsOnTarget = Avg(s => s.ShotsOnTarget),
+                Corners = Avg(s => s.Corners),
+                Fouls = Avg(s => s.FoulsCommitted),
+                YellowCards = Avg(s => s.Yellow),
+                RedCards = Avg(s => s.Red)
+            };
+        }
+
+
+
     }
 }
+

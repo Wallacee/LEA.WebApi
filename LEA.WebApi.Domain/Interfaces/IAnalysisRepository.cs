@@ -54,5 +54,17 @@ namespace LEA.WebApi.Domain.Interfaces
         List<short> GetTakenShotsOnTargetFullTimeHome(int homeTeamId, int amountGame);
         List<short> GetTakenShotsOnTargetFullTimeAway(int awayTeamId, int amountGame);
 
+
+        LeagueAverages GetLeagueAverages(int leagueId, DateTime matchDate);
+        TeamStrengthProfile GetTeamStrength(int teamId, int leagueId, DateTime matchDate);
+        TeamProfile GetTeamProfile(
+           int teamId,
+           int leagueId,
+           DateTime matchDate,
+           bool isHome);
+
+        LeagueCalibration GetLeagueCalibration(
+    int leagueId,
+    DateTime matchDate);
     }
 }

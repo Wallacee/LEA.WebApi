@@ -28,6 +28,11 @@ namespace LEA.WebApi.IoC
             #region service
             services.AddScoped<IUploadService, UploadService>();
             services.AddScoped<IAnalysisService, AnalysisService>();
+
+            services.AddScoped<IBinomialService, BinomialService>();
+            services.AddScoped<INegativeBinomialService, NegativeBinomialService>();
+            services.AddScoped<IPoissonService, PoissonService>();
+            services.AddScoped<IPredictionService, PredictionService>();
             #endregion
         }
 
