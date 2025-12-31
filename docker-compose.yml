@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: lea-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Melado17!"
+    ports:
+      - "1433:1433"
+    volumes:
+      - lea_sql_data:/var/opt/mssql
+      - ./docker/sql:/docker/sql
+    command: ["/bin/bash", "/docker/sql/entrypoint.sh"]
+    networks:
+      - lea-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lea-api
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnectionSQLServer: >
+        Server=db;
+        Database=LEA_DB;
+        User Id=lea_user;
+        Password=Melado17!;
+        TrustServerCertificate=True;
+    ports:
+      - "6661:80"
+    networks:
+      - lea-network
+
+volumes:
+  lea_sql_data:
+
+networks:
+  lea-network:
+    driver: bridge

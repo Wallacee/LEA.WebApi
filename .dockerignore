@@ -1,0 +1,29 @@
+# .NET build output
+bin/
+obj/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Docker files
+Dockerfile
+docker-compose.yml
+
+# Logs e temporários
+*.log
+*.tmp
+
+# Config sensível
+appsettings.Development.json
+.env
+.env.*
+
+# Node (se existir)
+node_modules/
+dist/
