@@ -1,4 +1,4 @@
-using LEA.WebApi.Dal;
+﻿using LEA.WebApi.Dal;
 using LEA.WebApi.IoC;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,19 +20,41 @@ namespace LEA.WebApi.Web
 
         public IConfiguration Configuration { get; }
 
+        public Context CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<Context>();
+
+            optionsBuilder.UseSqlServer(
+                "Server=localhost,1433;Database=LEA_DB;User Id=sa;Password=Melado17!;TrustServerCertificate=True");
+
+            return new Context(optionsBuilder.Options);
+        }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<Context>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnectionSQLServer")));
+            services.AddDbContext<Context>(options =>
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("DefaultConnectionSQLServer")
+                )
+            );
+
             NativeInjector.RegisterService(services);
+
             services.AddControllers();
+
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "LEA.WebApi.Web", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "LEA.WebApi.Web",
+                    Version = "v1"
+                });
             });
 
             services.AddCors();
         }
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -40,32 +62,41 @@ namespace LEA.WebApi.Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LEA.WebApi.Web v1"));
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "LEA.WebApi.Web v1");
+                });
+
+                app.UseHttpsRedirection(); // Só no Dev
             }
 
             app.UseCors(builder =>
             {
                 builder
-                   .WithOrigins("http://localhost:4200", "https://localhost:4200")
-                   .SetIsOriginAllowedToAllowWildcardSubdomains()
-                   .AllowAnyHeader()
-                   .AllowCredentials()
-                   .WithMethods("GET", "PUT", "POST", "DELETE", "OPTIONS")
-                   .SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
-            }
-);
-
-            app.UseHttpsRedirection();
+                    .WithOrigins("http://localhost:4200")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
 
             app.UseRouting();
 
             app.UseAuthorization();
+            
+            using var scope = app.ApplicationServices.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<Context>();
+            db.Database.Migrate();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
+            
         }
     }
+
 }
+

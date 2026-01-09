@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: lea-sql
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  api:
+    image: lea-api
+    container_name: lea-api
+    depends_on:
+      - sqlserver
+    ports:
+      - "8080:80"
+    environment:
+      ConnectionStrings__DefaultConnection: >
+        Server=sqlserver;
+        Database=${DB_NAME};
+        User Id=${DB_USER};
+        Password=${SA_PASSWORD};
+
+volumes:
+  sql_data:
