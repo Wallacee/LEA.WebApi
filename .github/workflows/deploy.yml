@@ -2,10 +2,7 @@ name: CD - Deploy to EC2
 
 on:
   workflow_run:
-    workflows:
-      - CI - Build and Push Docker Image
-    branches:
-      - dev
+    workflows: ["CI - Build Docker Image"]
     types:
       - completed
 
@@ -21,11 +18,10 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          timeout: 30s
-          command_timeout: 10m
           script: |
             cd ~/lea-webapi
+
+            echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" > .env
+
             docker compose pull
             docker compose up -d
-            docker image prune -f

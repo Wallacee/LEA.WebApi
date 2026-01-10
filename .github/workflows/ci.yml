@@ -1,4 +1,4 @@
-name: CI - Build and Push Docker Image
+name: CI - Build Docker Image
 
 on:
   push:
@@ -9,9 +9,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    outputs:
+      image_tag: ${{ steps.vars.outputs.sha }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: vars
+        run: echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
       - name: Login Docker Hub
         uses: docker/login-action@v3
@@ -19,12 +26,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: dockerfile
-          push: true
-          tags: |
-            171388/lea-api:latest
-            171388/lea-api:${{ github.sha }}
+      - name: Build image
+        run: |
+          docker build -t 171388/lea-api:${{ github.sha }} .
+
+      - name: Push image
+        run: |
+          docker push 171388/lea-api:${{ github.sha }}
