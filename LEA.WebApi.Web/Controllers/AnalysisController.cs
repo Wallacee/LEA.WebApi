@@ -26,6 +26,13 @@ namespace LEA.WebApi.Web.Controllers
         }
 
         [HttpGet]
+        [Route("TesteApi")]
+        public IActionResult Teste()
+        {
+            return StatusCode(200, "A API está no ar!!");
+        }
+
+        [HttpGet]
         [Route("Leagues")]
         public IActionResult Leagues()
         {
