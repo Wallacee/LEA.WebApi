@@ -31,5 +31,4 @@ jobs:
           context: .
           push: true
           tags: |
-            171388/lea-api:${{ steps.tag.outputs.tag }}
             171388/lea-api:latest
