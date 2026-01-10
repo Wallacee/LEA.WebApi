@@ -13,7 +13,7 @@ services:
       - sql_data:/var/opt/mssql
 
   api:
-    image: lea-api
+    image: 171388/lea-api:${IMAGE_TAG:-latest}
     container_name: lea-api
     depends_on:
       - sqlserver

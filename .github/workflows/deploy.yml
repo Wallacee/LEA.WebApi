@@ -2,7 +2,8 @@ name: CD - Deploy to EC2
 
 on:
   workflow_run:
-    workflows: ["CI - Build and Push"]
+    workflows: ["CI - Build Docker Image"]
+    branches: [dev]
     types:
       - completed
 
@@ -20,6 +21,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/lea-webapi
-            echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" > .env
+
+            echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" > .env.ci
+            sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=${{ github.event.workflow_run.head_sha }}/' .env || true
+            cat .env.ci >> .env
+
             docker compose pull
             docker compose up -d
