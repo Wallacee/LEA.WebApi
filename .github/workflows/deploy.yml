@@ -3,7 +3,7 @@ name: CD - Deploy to EC2
 on:
   workflow_run:
     workflows:
-      - CI - Build Docker Image
+      - CI - Build and Push Docker Image
     types:
       - completed
 
