@@ -29,7 +29,7 @@ namespace LEA.WebApi.Web.Controllers
         [Route("TesteApi")]
         public IActionResult Teste()
         {
-            return StatusCode(200, "A API está no ar, viado da try!!");
+            return StatusCode(200, "A API está no ar, viado da try maker!!");
         }
 
         [HttpGet]
