@@ -4,18 +4,18 @@ on:
   workflow_run:
     workflows:
       - CI - Build and Push Docker Image
+    branches:
+      - dev
     types:
       - completed
 
 jobs:
   deploy:
-    # Só roda se o CI terminou com sucesso
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH to EC2
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -25,14 +25,7 @@ jobs:
           timeout: 30s
           command_timeout: 10m
           script: |
-            echo "➡️ Entrando no projeto"
             cd ~/lea-webapi
-
-            echo "⬇️ Atualizando imagens Docker"
             docker compose pull
-
-            echo "♻️ Subindo containers atualizados"
             docker compose up -d
-
-            echo "🧹 Limpando imagens antigas"
             docker image prune -f
