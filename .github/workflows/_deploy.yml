@@ -3,8 +3,8 @@ name: CD - Deploy to EC2
 on:
   workflow_run:
     workflows: ["CI - Build Docker Image"] # nome EXATO
-    branches: [dev]
-    types: [completed]
+    types: 
+      - completed
 
 jobs:
   deploy:
