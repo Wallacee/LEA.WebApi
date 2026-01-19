@@ -7,69 +7,53 @@ on:
 
 jobs:
   ci:
-    name: CI - Build & Push Docker Image
+    name: CI - Build and Push Image
     runs-on: ubuntu-latest
 
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
     steps:
-      - name: 📥 Checkout do código
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 🐞 Debug arquivo VERSION (raw)
+      - name: Ler versão
+        id: version
         run: |
-          echo "Conteúdo bruto do VERSION:"
-          cat -A VERSION
+          VERSION=$(tr -d '\r\n' < VERSION)
+          echo "VERSION=$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: 🧼 Ler versão (sanitizada hard)
-        run: |
-          VERSION=$(cat VERSION | sed '1s/^\xEF\xBB\xBF//' | tr -d '\r\n')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Versão final usada: [$VERSION]"
-
-      - name: ✅ Validar formato da versão
-        run: |
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Versão inválida: $VERSION"
-            exit 1
-          fi
-          echo "✔ Versão válida"
-
-      - name: 🔐 Login no Docker Hub
+      - name: Login no Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: 🏗 Build e Push da imagem
+      - name: Build e Push da imagem
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: dockerfile
           push: true
           tags: |
-            171388/lea-api:${{ env.VERSION }}
+            171388/lea-api:${{ steps.version.outputs.version }}
             171388/lea-api:latest
-
-      - name: ✅ CI concluído
-        run: echo "CI finalizado com sucesso"
 
   cd:
     name: CD - Deploy automático na VM
-    runs-on: ubuntu-latest
     needs: ci
+    runs-on: ubuntu-latest
 
     steps:
-      - name: 🚀 Deploy via SSH na VM
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "Conectado na VM"
             cd ~/lea-webapi
+            export IMAGE_TAG=${{ needs.ci.outputs.version }}
+            echo "Deployando versão: $IMAGE_TAG"
             docker compose pull
             docker compose up -d
-            echo "Deploy finalizado"
-
-      - name: 🎉 CD concluído
-        run: echo "Deploy realizado com sucesso"
