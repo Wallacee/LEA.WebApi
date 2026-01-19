@@ -31,6 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens
 		.env = .env
 		docker-compose.yml = docker-compose.yml
 		dockerfile = dockerfile
+		VERSION = VERSION
 		__global.json = __global.json
 	EndProjectSection
 EndProject

@@ -1,4 +1,4 @@
-name: CI/CD - Build, Push and Deploy
+name: CI/CD - Build, Version and Deploy (Verbose)
 
 on:
   push:
@@ -6,43 +6,136 @@ on:
       - dev
 
 jobs:
+# ======================================================
+# CI
+# ======================================================
   ci:
-    name: CI - Build and Push Image
+    name: CI - Build and Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout código
+      - name: 🧩 Checkout do código
         uses: actions/checkout@v4
 
-      - name: Login no Docker Hub
-        uses: docker/login-action@v3
+      - name: 📦 Lendo versão do projeto
+        id: version
+        run: |
+          echo "========================================"
+          echo "📦 LENDO ARQUIVO VERSION"
+          echo "========================================"
+
+          if [ ! -f VERSION ]; then
+            echo "❌ ERRO: Arquivo VERSION não encontrado"
+            exit 1
+          fi
+
+          VERSION=$(cat VERSION)
+          echo "➡️ Versão encontrada: $VERSION"
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: 🔐 Login no Docker Hub
+        run: |
+          echo "========================================"
+          echo "🔐 LOGIN NO DOCKER HUB"
+          echo "========================================"
+        shell: bash
+
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build e Push da imagem
-        uses: docker/build-push-action@v5
+      - name: 🐳 Build e Push da imagem Docker
+        run: |
+          echo "========================================"
+          echo "🐳 BUILD & PUSH DA IMAGEM"
+          echo "========================================"
+          echo "➡️ Imagens que serão publicadas:"
+          echo "   - 171388/lea-api:${{ env.VERSION }}"
+          echo "   - 171388/lea-api:latest"
+        shell: bash
+
+      - uses: docker/build-push-action@v5
         with:
           context: .
           file: dockerfile
           push: true
           tags: |
+            171388/lea-api:${{ env.VERSION }}
             171388/lea-api:latest
-            171388/lea-api:${{ github.sha }}
+
+      - name: ✅ CI FINALIZADO COM SUCESSO
+        run: |
+          echo "========================================"
+          echo "✅ CI FINALIZADO COM SUCESSO"
+          echo "========================================"
+
+
+# ======================================================
+# CD
+# ======================================================
   cd:
-    name: CD - Deploy na EC2
+    name: CD - Deploy automático na VM
     runs-on: ubuntu-latest
-    needs: ci   # 👈 ISSO É O ENCADEAMENTO REAL
+    needs: ci
 
     steps:
-      - name: Deploy via SSH
+      - name: 🚀 Iniciando Deploy na VM
+        run: |
+          echo "========================================"
+          echo "🚀 INICIANDO CD"
+          echo "========================================"
+          echo "➡️ Versão a ser deployada: ${{ env.VERSION }}"
+        shell: bash
+
+      - name: 🔑 Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           script: |
             set -e
+
+            echo "========================================"
+            echo "🔗 CONECTADO NA VM"
+            echo "========================================"
+
+            echo "➡️ Indo para pasta do projeto"
             cd ~/lea-webapi
+
+            echo "========================================"
+            echo "📄 ATUALIZANDO .env"
+            echo "========================================"
+
+            if [ ! -f .env ]; then
+              echo "❌ ERRO: arquivo .env não encontrado"
+              exit 1
+            fi
+
+            echo "➡️ Setando IMAGE_TAG=${{ env.VERSION }}"
+            sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${{ env.VERSION }}/" .env
+
+            echo "📄 Conteúdo atual do .env:"
+            cat .env
+
+            echo "========================================"
+            echo "📥 DOCKER COMPOSE PULL"
+            echo "========================================"
             docker compose pull
+
+            echo "========================================"
+            echo "🔄 DOCKER COMPOSE UP"
+            echo "========================================"
             docker compose up -d
+
+            echo "========================================"
+            echo "📦 STATUS DOS CONTAINERS"
+            echo "========================================"
+            docker ps
+
+            echo "========================================"
+            echo "✅ DEPLOY FINALIZADO COM SUCESSO"
+            echo "========================================"
