@@ -1,4 +1,4 @@
-name: CI/CD - Build, Version, Deploy (Sanitized & Verbose)
+name: CI/CD - Build, Version and Deploy
 
 on:
   push:
@@ -6,58 +6,40 @@ on:
       - dev
 
 jobs:
-  ci-cd:
-    name: CI + CD Pipeline
+  ci:
+    name: CI - Build & Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      # =========================
-      # 1️⃣ CHECKOUT
-      # =========================
-      - name: 🧾 Checkout do código
+      - name: 📥 Checkout do código
         uses: actions/checkout@v4
 
-      # =========================
-      # 2️⃣ DEBUG DO ARQUIVO VERSION
-      # =========================
-      - name: 🔍 Debug arquivo VERSION (raw)
+      - name: 🐞 Debug arquivo VERSION (raw)
         run: |
           echo "Conteúdo bruto do VERSION:"
-          cat -A VERSION || echo "Arquivo VERSION não encontrado"
+          cat -A VERSION
 
-      # =========================
-      # 3️⃣ LER E SANITIZAR VERSION
-      # =========================
       - name: 🧼 Ler versão (sanitizada hard)
-        id: version
         run: |
           VERSION=$(cat VERSION | sed '1s/^\xEF\xBB\xBF//' | tr -d '\r\n')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Versão final usada: [$VERSION]"
 
-      # =========================
-      # 4️⃣ VALIDAR VERSION
-      # =========================
       - name: ✅ Validar formato da versão
         run: |
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-             echo "❌ Versão inválida: $VERSION"
-             exit 1
+            echo "❌ Versão inválida: $VERSION"
+            exit 1
           fi
           echo "✔ Versão válida"
-      # =========================
-      # 5️⃣ LOGIN DOCKER HUB
-      # =========================
+
       - name: 🔐 Login no Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # =========================
-      # 6️⃣ BUILD & PUSH
-      # =========================
-      - name: 🐳 Build e Push da imagem Docker
+      - name: 🏗 Build e Push da imagem
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -67,41 +49,27 @@ jobs:
             171388/lea-api:${{ env.VERSION }}
             171388/lea-api:latest
 
-      # =========================
-      # 7️⃣ CONFIRMAÇÃO CI
-      # =========================
       - name: ✅ CI concluído
-        run: |
-          echo "Imagem publicada:"
-          echo " - 171388/lea-api:${VERSION}"
-          echo " - 171388/lea-api:latest"
+        run: echo "CI finalizado com sucesso"
 
-      # =========================
-      # 8️⃣ DEPLOY NA VM (CD)
-      # =========================
-      - name: 🚀 Deploy automático na VM via SSH
+  cd:
+    name: CD - Deploy automático na VM
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - name: 🚀 Deploy via SSH na VM
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          timeout: 30s
           script: |
-            echo "🔗 Conectado na VM"
+            echo "Conectado na VM"
             cd ~/lea-webapi
-
-            echo "📥 Atualizando imagens"
-            export IMAGE_TAG=${{ env.VERSION }}
             docker compose pull
-
-            echo "♻️ Subindo containers"
             docker compose up -d
+            echo "Deploy finalizado"
 
-            echo "📦 Containers ativos:"
-            docker ps
-
-      # =========================
-      # 9️⃣ FINAL
-      # =========================
-      - name: 🎉 Pipeline finalizado
-        run: echo "CI/CD executado com sucesso"
+      - name: 🎉 CD concluído
+        run: echo "Deploy realizado com sucesso"
