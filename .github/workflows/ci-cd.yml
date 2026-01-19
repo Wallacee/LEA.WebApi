@@ -1,4 +1,4 @@
-name: CI/CD - Build, Version and Deploy (Verbose)
+name: CI/CD - Build, Version, Deploy (Sanitized & Verbose)
 
 on:
   push:
@@ -6,57 +6,60 @@ on:
       - dev
 
 jobs:
-# ======================================================
-# CI
-# ======================================================
-  ci:
-    name: CI - Build and Push Docker Image
+  ci-cd:
+    name: CI + CD Pipeline
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🧩 Checkout do código
+      # =========================
+      # 1️⃣ CHECKOUT
+      # =========================
+      - name: 🧾 Checkout do código
         uses: actions/checkout@v4
 
-      - name: 📦 Lendo versão do projeto
+      # =========================
+      # 2️⃣ DEBUG DO ARQUIVO VERSION
+      # =========================
+      - name: 🔍 Debug arquivo VERSION (raw)
+        run: |
+          echo "Conteúdo bruto do VERSION:"
+          cat -A VERSION || echo "Arquivo VERSION não encontrado"
+
+      # =========================
+      # 3️⃣ LER E SANITIZAR VERSION
+      # =========================
+      - name: 🧼 Ler versão (sanitizada)
         id: version
         run: |
-          echo "========================================"
-          echo "📦 LENDO ARQUIVO VERSION"
-          echo "========================================"
+          VERSION=$(cat VERSION | tr -d '\r' | tr -d '\n')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Versão sanitizada: [$VERSION]"
 
-          if [ ! -f VERSION ]; then
-            echo "❌ ERRO: Arquivo VERSION não encontrado"
+      # =========================
+      # 4️⃣ VALIDAR VERSION
+      # =========================
+      - name: ✅ Validar formato da versão
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Versão inválida: $VERSION"
             exit 1
           fi
+          echo "✔ Versão válida"
 
-          VERSION=$(cat VERSION)
-          echo "➡️ Versão encontrada: $VERSION"
-
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
+      # =========================
+      # 5️⃣ LOGIN DOCKER HUB
+      # =========================
       - name: 🔐 Login no Docker Hub
-        run: |
-          echo "========================================"
-          echo "🔐 LOGIN NO DOCKER HUB"
-          echo "========================================"
-        shell: bash
-
-      - uses: docker/login-action@v3
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # =========================
+      # 6️⃣ BUILD & PUSH
+      # =========================
       - name: 🐳 Build e Push da imagem Docker
-        run: |
-          echo "========================================"
-          echo "🐳 BUILD & PUSH DA IMAGEM"
-          echo "========================================"
-          echo "➡️ Imagens que serão publicadas:"
-          echo "   - 171388/lea-api:${{ env.VERSION }}"
-          echo "   - 171388/lea-api:latest"
-        shell: bash
-
-      - uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: dockerfile
@@ -65,77 +68,41 @@ jobs:
             171388/lea-api:${{ env.VERSION }}
             171388/lea-api:latest
 
-      - name: ✅ CI FINALIZADO COM SUCESSO
+      # =========================
+      # 7️⃣ CONFIRMAÇÃO CI
+      # =========================
+      - name: ✅ CI concluído
         run: |
-          echo "========================================"
-          echo "✅ CI FINALIZADO COM SUCESSO"
-          echo "========================================"
+          echo "Imagem publicada:"
+          echo " - 171388/lea-api:${VERSION}"
+          echo " - 171388/lea-api:latest"
 
-
-# ======================================================
-# CD
-# ======================================================
-  cd:
-    name: CD - Deploy automático na VM
-    runs-on: ubuntu-latest
-    needs: ci
-
-    steps:
-      - name: 🚀 Iniciando Deploy na VM
-        run: |
-          echo "========================================"
-          echo "🚀 INICIANDO CD"
-          echo "========================================"
-          echo "➡️ Versão a ser deployada: ${{ env.VERSION }}"
-        shell: bash
-
-      - name: 🔑 Deploy via SSH
+      # =========================
+      # 8️⃣ DEPLOY NA VM (CD)
+      # =========================
+      - name: 🚀 Deploy automático na VM via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
+          timeout: 30s
           script: |
-            set -e
-
-            echo "========================================"
-            echo "🔗 CONECTADO NA VM"
-            echo "========================================"
-
-            echo "➡️ Indo para pasta do projeto"
+            echo "🔗 Conectado na VM"
             cd ~/lea-webapi
 
-            echo "========================================"
-            echo "📄 ATUALIZANDO .env"
-            echo "========================================"
-
-            if [ ! -f .env ]; then
-              echo "❌ ERRO: arquivo .env não encontrado"
-              exit 1
-            fi
-
-            echo "➡️ Setando IMAGE_TAG=${{ env.VERSION }}"
-            sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${{ env.VERSION }}/" .env
-
-            echo "📄 Conteúdo atual do .env:"
-            cat .env
-
-            echo "========================================"
-            echo "📥 DOCKER COMPOSE PULL"
-            echo "========================================"
+            echo "📥 Atualizando imagens"
+            export IMAGE_TAG=${{ env.VERSION }}
             docker compose pull
 
-            echo "========================================"
-            echo "🔄 DOCKER COMPOSE UP"
-            echo "========================================"
+            echo "♻️ Subindo containers"
             docker compose up -d
 
-            echo "========================================"
-            echo "📦 STATUS DOS CONTAINERS"
-            echo "========================================"
+            echo "📦 Containers ativos:"
             docker ps
 
-            echo "========================================"
-            echo "✅ DEPLOY FINALIZADO COM SUCESSO"
-            echo "========================================"
+      # =========================
+      # 9️⃣ FINAL
+      # =========================
+      - name: 🎉 Pipeline finalizado
+        run: echo "CI/CD executado com sucesso"
