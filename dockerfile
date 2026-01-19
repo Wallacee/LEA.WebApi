@@ -16,3 +16,6 @@ ENV ASPNETCORE_URLS=http://+:80
 COPY --from=build /app/publish .
 
 ENTRYPOINT ["dotnet", "LEA.WebApi.Web.dll"]
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=3 \
+  CMD curl -f http://localhost/health || exit 1
