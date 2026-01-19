@@ -28,12 +28,12 @@ jobs:
       # =========================
       # 3️⃣ LER E SANITIZAR VERSION
       # =========================
-      - name: 🧼 Ler versão (sanitizada)
+      - name: 🧼 Ler versão (sanitizada hard)
         id: version
         run: |
-          VERSION=$(cat VERSION | tr -d '\r' | tr -d '\n')
+          VERSION=$(cat VERSION | sed '1s/^\xEF\xBB\xBF//' | tr -d '\r\n')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Versão sanitizada: [$VERSION]"
+          echo "Versão final usada: [$VERSION]"
 
       # =========================
       # 4️⃣ VALIDAR VERSION
@@ -41,11 +41,10 @@ jobs:
       - name: ✅ Validar formato da versão
         run: |
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Versão inválida: $VERSION"
-            exit 1
+             echo "❌ Versão inválida: $VERSION"
+             exit 1
           fi
           echo "✔ Versão válida"
-
       # =========================
       # 5️⃣ LOGIN DOCKER HUB
       # =========================
