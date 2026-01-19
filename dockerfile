@@ -12,6 +12,7 @@ RUN dotnet publish LEA.WebApi.Web/LEA.WebApi.Web.csproj -c Release -o /app/publi
 
 FROM mcr.microsoft.com/dotnet/aspnet:5.0
 WORKDIR /app
+ENV ASPNETCORE_URLS=http://+:80
 COPY --from=build /app/publish .
 
 ENTRYPOINT ["dotnet", "LEA.WebApi.Web.dll"]
