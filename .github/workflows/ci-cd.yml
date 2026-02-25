@@ -53,7 +53,12 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/lea-webapi
+            
+            echo "🧹 Limpando imagens antigas..."
+            docker image prune -af
+            
             export IMAGE_TAG=${{ needs.ci.outputs.version }}
             echo "Deployando versão: $IMAGE_TAG"
+            
             docker compose pull
             docker compose up -d
